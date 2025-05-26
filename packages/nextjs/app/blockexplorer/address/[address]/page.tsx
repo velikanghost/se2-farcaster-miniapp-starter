@@ -6,9 +6,12 @@ import deployedContracts from "~~/contracts/deployedContracts";
 import { isZeroAddress } from "~~/utils/scaffold-eth/common";
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
-type PageProps = {
-  params: { address: string };
-};
+interface PageProps {
+  params: {
+    address: string;
+  };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
 
 async function fetchByteCodeAndAssembly(buildInfoDirectory: string, contractPath: string) {
   const buildInfoFiles = fs.readdirSync(buildInfoDirectory);
