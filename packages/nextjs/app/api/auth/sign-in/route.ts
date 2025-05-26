@@ -4,7 +4,7 @@ import { verifyMessage } from "viem";
 import { fetchUser } from "~~/utils/neynar";
 
 export const POST = async (req: NextRequest) => {
-  let { fid, signature, message } = await req.json();
+  const { fid, signature, message } = await req.json();
   const user = await fetchUser(fid);
 
   // Verify signature matches custody address
