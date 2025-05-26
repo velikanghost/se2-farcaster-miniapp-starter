@@ -6,12 +6,10 @@ import deployedContracts from "~~/contracts/deployedContracts";
 import { isZeroAddress } from "~~/utils/scaffold-eth/common";
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
-interface PageProps {
-  params: {
-    address: string;
-  };
+type PageProps = {
+  params: { address: string };
   searchParams: { [key: string]: string | string[] | undefined };
-}
+};
 
 async function fetchByteCodeAndAssembly(buildInfoDirectory: string, contractPath: string) {
   const buildInfoFiles = fs.readdirSync(buildInfoDirectory);
@@ -85,13 +83,11 @@ export function generateStaticParams() {
   return [{ address: "0x0000000000000000000000000000000000000000" }];
 }
 
-const AddressPage = async ({ params }: PageProps) => {
+export default async function AddressPage({ params }: PageProps) {
   const address = params?.address as string;
 
   if (isZeroAddress(address)) return null;
 
-  const contractData: { bytecode: string; assembly: string } | null = await getContractData(address);
+  const contractData = await getContractData(address);
   return <AddressComponent address={address} contractData={contractData} />;
-};
-
-export default AddressPage;
+}
