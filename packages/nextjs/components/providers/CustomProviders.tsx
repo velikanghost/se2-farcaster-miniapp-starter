@@ -17,12 +17,6 @@ interface ProvidersProps {
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   useInitializeNativeCurrencyPrice();
 
-  const { connect, connectors } = useConnect();
-
-  useEffect(() => {
-    connect({ connector: connectors[0] });
-  }, []);
-
   return (
     <>
       <div className={`min-h-screen`}>
