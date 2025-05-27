@@ -61,37 +61,6 @@ export default function Home() {
 
       console.log("res", response);
 
-      // const response = await fetch("/api/send-notification", {
-      //   method: "POST",
-      //   mode: "same-origin",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({
-      //     fid: user.fid,
-      //     notification: {
-      //       title: "Test Notification",
-      //       body: "This is a test notification",
-      //       targetUrl: window.location.href,
-      //     },
-      //   }),
-      // });
-
-      // const data = await response.json();
-
-      // if (!response.ok) {
-      //   setSendNotificationResult(`Error: ${data.error}`);
-      //   return;
-      // }
-
-      // if (data.result?.rateLimitedTokens?.length > 0) {
-      //   setSendNotificationResult("Rate limited - please try again later");
-      //   return;
-      // }
-
-      // if (data.result?.invalidTokens?.length > 0) {
-      //   setSendNotificationResult("Notification token is invalid - please re-enable notifications");
-      //   return;
-      // }
-
       setSendNotificationResult("Success");
     } catch (error) {
       setSendNotificationResult(`Error: ${error}`);
