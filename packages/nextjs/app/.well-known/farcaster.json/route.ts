@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
  * @returns The farcaster manifest for the frame
  */
 export async function getFarcasterManifest() {
-  let frameName = "Mini-app Starter";
+  let frameName = "Scaffold-ETH Mini-app Starter";
   let noindex = false;
   const appUrl = process.env.NEXT_PUBLIC_URL || "";
   if (appUrl.includes("localhost")) {
@@ -36,13 +36,13 @@ export async function getFarcasterManifest() {
       splashBackgroundColor: "#FFFFFF",
       webhookUrl: `${appUrl}/api/webhook`,
       // Metadata https://github.com/farcasterxyz/miniapps/discussions/191
-      subtitle: "Starter kit for mini-apps", // 30 characters, no emojis or special characters, short description under app name
-      description: "Starter kit for mini-apps", // 170 characters, no emojis or special characters, promotional message displayed on Mini App Page
+      subtitle: "Scaffold-ETH Starter kit for mini-apps", // 30 characters, no emojis or special characters, short description under app name
+      description: "Scaffold-ETH Starter kit for mini-apps", // 170 characters, no emojis or special characters, promotional message displayed on Mini App Page
       primaryCategory: "social",
-      tags: ["mini-app", "starter"], // up to 5 tags, filtering/search tags
-      tagline: "Starter kit for mini-apps", // 30 characters, marketing tagline should be punchy and descriptive
+      tags: ["mini-app", "starter", "monad", "scaffold-eth"], // up to 5 tags, filtering/search tags
+      tagline: "Scaffold-ETH Starter kit for mini-apps", // 30 characters, marketing tagline should be punchy and descriptive
       ogTitle: `${frameName}`, // 30 characters, app name + short tag, Title case, no emojis
-      ogDescription: "Starter kit for Farcastermini-apps", // 100 characters, summarize core benefits in 1-2 lines
+      ogDescription: "Scaffold-ETH Starter kit for Farcastermini-apps", // 100 characters, summarize core benefits in 1-2 lines
       screenshotUrls: [
         // 1284 x 2778, visual previews of the app, max 3 screenshots
         `${appUrl}/images/feed.png`,
@@ -55,11 +55,33 @@ export async function getFarcasterManifest() {
 }
 
 export async function GET() {
-  try {
-    const manifest = await getFarcasterManifest();
-    return NextResponse.json(manifest);
-  } catch (error) {
-    console.error("Error generating manifest:", error);
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+  let frameName = "Scaffold-ETH Mini-app Starter";
+  let noindex = false;
+  const appUrl = process.env.NEXT_PUBLIC_URL || "";
+
+  if (appUrl.includes("localhost")) {
+    frameName += " Local";
+    noindex = true;
+  } else if (appUrl.includes("ngrok")) {
+    frameName += " NGROK";
+    noindex = true;
+  } else if (appUrl.includes("https://dev.")) {
+    frameName += " Dev";
+    noindex = true;
   }
+
+  return NextResponse.json({
+    accountAssociation: {
+      header: process.env.NEXT_PUBLIC_FARCASTER_HEADER,
+      payload: process.env.NEXT_PUBLIC_FARCASTER_PAYLOAD,
+      signature: process.env.NEXT_PUBLIC_FARCASTER_SIGNATURE,
+    },
+    frame: {
+      version: "1",
+      name: frameName,
+      noindex,
+      homeUrl: appUrl,
+      webhookUrl: `${appUrl}/api/webhook`,
+    },
+  });
 }

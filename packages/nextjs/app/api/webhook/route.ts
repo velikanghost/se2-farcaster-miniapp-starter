@@ -1,111 +1,46 @@
-import { createPublicClient, http } from "viem";
-import { optimism } from "viem/chains";
-import { sendFrameNotification } from "~~/utils/notification-client";
-import { deleteUserNotificationDetails, setUserNotificationDetails } from "~~/utils/notifications";
+import { NextResponse } from "next/server";
+// import { parseWebhookEvent } from "@farcaster/frame-node";
+// import { FrameNotificationDetails } from "@farcaster/frame-sdk";
+import { redis } from "~~/utils/redis";
 
-const KEY_REGISTRY_ADDRESS = "0x00000000Fc1237824fb747aBDE0FF18990E59b7e";
+const NOTIFICATION_KEY_PREFIX = "notifications:";
 
-const KEY_REGISTRY_ABI = [
-  {
-    inputs: [
-      { name: "fid", type: "uint256" },
-      { name: "key", type: "bytes" },
-    ],
-    name: "keyDataOf",
-    outputs: [
-      {
-        components: [
-          { name: "state", type: "uint8" },
-          { name: "keyType", type: "uint32" },
-        ],
-        name: "",
-        type: "tuple",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-] as const;
-
-async function verifyFidOwnership(fid: number, appKey: `0x${string}`) {
-  const client = createPublicClient({
-    chain: optimism,
-    transport: http(),
-  });
-
-  try {
-    const result = await client.readContract({
-      address: KEY_REGISTRY_ADDRESS,
-      abi: KEY_REGISTRY_ABI,
-      functionName: "keyDataOf",
-      args: [BigInt(fid), appKey],
-    });
-
-    return result.state === 1 && result.keyType === 1;
-  } catch (error) {
-    console.error("Key Registry verification failed:", error);
-    return false;
-  }
-}
-
-function decode(encoded: string) {
-  return JSON.parse(Buffer.from(encoded, "base64url").toString("utf-8"));
+function getNotificationKey(fid: number): string {
+  return `${NOTIFICATION_KEY_PREFIX}${fid}`;
 }
 
 export async function POST(request: Request) {
-  const requestJson = await request.json();
+  try {
+    const requestJson = await request.json();
 
-  const { header: encodedHeader, payload: encodedPayload } = requestJson;
+    // Parse and verify the webhook event
+    const { fid, event, notificationDetails } = requestJson;
 
-  const headerData = decode(encodedHeader);
-  const event = decode(encodedPayload);
+    switch (event) {
+      case "frame_added":
+        if (notificationDetails) {
+          await redis?.set(getNotificationKey(fid), notificationDetails);
+        }
+        break;
 
-  const { fid, key } = headerData;
+      case "frame_removed":
+        await redis?.del(getNotificationKey(fid));
+        break;
 
-  const valid = await verifyFidOwnership(fid, key);
+      case "notifications_enabled":
+        if (notificationDetails) {
+          await redis?.set(getNotificationKey(fid), notificationDetails);
+        }
+        break;
 
-  if (!valid) {
-    return Response.json({ success: false, error: "Invalid FID ownership" }, { status: 401 });
+      case "notifications_disabled":
+        await redis?.del(getNotificationKey(fid));
+        break;
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Webhook error:", error);
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 400 });
   }
-
-  switch (event.event) {
-    case "frame_added":
-      console.log("frame_added", "event.notificationDetails", event.notificationDetails);
-      if (event.notificationDetails) {
-        await setUserNotificationDetails(fid, event.notificationDetails);
-        await sendFrameNotification({
-          fid,
-          title: `Welcome to Farcaster Mini App Template`,
-          body: `Thank you for adding Farcaster Mini App Template`,
-        });
-      } else {
-        await deleteUserNotificationDetails(fid);
-      }
-
-      break;
-    case "frame_removed": {
-      console.log("frame_removed");
-      await deleteUserNotificationDetails(fid);
-      break;
-    }
-    case "notifications_enabled": {
-      console.log("notifications_enabled", event.notificationDetails);
-      await setUserNotificationDetails(fid, event.notificationDetails);
-      await sendFrameNotification({
-        fid,
-        title: `Welcome to Farcaster Mini App Template`,
-        body: `Thank you for enabling notifications for Farcaster Mini App Template`,
-      });
-
-      break;
-    }
-    case "notifications_disabled": {
-      console.log("notifications_disabled");
-      await deleteUserNotificationDetails(fid);
-
-      break;
-    }
-  }
-
-  return Response.json({ success: true });
 }
