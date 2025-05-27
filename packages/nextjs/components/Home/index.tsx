@@ -46,7 +46,7 @@ export default function Home() {
 
   const sendNotification = useCallback(async () => {
     setSendNotificationResult("");
-    if (!notificationDetails || !user) {
+    if (!user) {
       console.log("No notification details or user");
       return;
     }
