@@ -1,21 +1,67 @@
-# 🏗 Scaffold-ETH 2 - Foundry Edition + Farcaster Mini-App
+# 🏗 Scaffold-ETH 2 + Farcaster Mini-App Template
 
 <h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
+  <a href="https://docs.scaffoldeth.io">Scaffold-ETH 2</a> |
+  <a href="https://miniapps.farcaster.xyz/docs/getting-started">Farcaster Mini-App</a>
 </h4>
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on Monad and other blockchain integrated with Farcaster Mini-Apps. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts while leveraging Farcaster's social features.
 
-⚙️ Built using NextJS, RainbowKit, Foundry, Wagmi, Viem, and Typescript.
+⚙️ Built using NextJS, RainbowKit, Foundry, Wagmi, Viem, Typescript, and Farcaster Frame SDK.
+
+## Features
+
+### Scaffold-ETH 2 Features
 
 - ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
 - 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
 - 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
 - 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+
+### Farcaster Mini-App Features
+
+- 🖼️ **Frame Configuration**: Pre-configured `.well-known/farcaster.json` endpoint for Frame metadata and account association
+- 🔐 **Integration with Farcaster Wallet**: Connect to farcaster wallet and interact with the default monad network.
+- 🔔 **Background Notifications**: Redis-backed notification system using Upstash
+- 🛠️ **MiniApp Provider**: Built-in context provider for Farcaster Mini-App functionality
+- 🎨 **Dynamic Preview Images**: Support for custom preview images in your frames
 
 ![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+
+## Farcaster Frame Features
+
+### Frame Configuration
+
+The template comes with pre-configured Frame metadata and account association:
+
+- `.well-known/farcaster.json` endpoint is set up for Frame metadata
+- Frame metadata is automatically added to page headers in `layout.tsx`
+- Account association is required for user notifications.
+
+### Background Notifications
+
+Built-in notification system powered by Redis/Upstash:
+
+- Ready-to-use notification endpoint in `utils/notifs.ts`
+- Notification utilities in `utils/kv.ts`
+- KV store implementation for storing user notification preferences
+
+### MiniApp Provider
+
+The app is wrapped with `MiniAppProvider` in `contexts/miniapp-context.tsx`, providing:
+
+- Access to Farcaster Mini App context
+- Frame SDK integration
+- Notification management
+- User authentication
+
+### Dynamic Preview Images
+
+Support for dynamic OG images in your Frames:
+
+- Example implementation in `app/api/og/route.tsx`
+- Customizable templates for Frame previews
+- Real-time image generation based on Frame content
 
 ## Requirements
 
@@ -27,22 +73,22 @@ Before you begin, you need to install the following tools:
 
 ## Quickstart
 
-To get started with Scaffold-ETH 2, follow the steps below:
+To get started with this Scaffold-ETH 2 Farcaster Mini-App template, follow these steps:
 
 1. Install dependencies:
 
-```
+```bash
 cd se2-foundry-monad
 yarn install && forge install --root packages/foundry
 ```
 
-```
+```bash
 rm -rf lib/forge-std && forge install foundry-rs/forge-std --no-commit
 ```
 
 2. Run a local network in the first terminal:
 
-```
+```bash
 yarn chain
 ```
 
@@ -50,25 +96,40 @@ This command starts a local Ethereum network using Foundry. The network runs on 
 
 3. On a second terminal, deploy the test contract:
 
-```
+```bash
 yarn deploy
 ```
 
-This command deploys a test smart contract to the local network. The contract is located in `packages/foundry/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/foundry/script` to deploy the contract to the network. You can also customize the deploy script.
+This command deploys a test smart contract to the local network. The contract is located in `packages/foundry/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/foundry/script` to deploy the contract to the network.
 
 4. On a third terminal, start your NextJS app:
 
-```
+```bash
 yarn start
 ```
 
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
+5. Run a local tunneling server (required for Farcaster Frame development):
 
-Run smart contract test with `yarn foundry:test`
+   - Use [NGROK](https://ngrok.com/) or [Local Tunnel](https://theboroer.github.io/localtunnel-www/)
+   - This will allow your local development server to be accessible from the internet
 
-- Edit your smart contracts in `packages/foundry/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
+6. Generate your Farcaster Manifest variables:
+   - Visit the [Farcaster Frame Manifest Tool](https://frames.wnxm.ph/)
+   - Enter your tunnel domain
+   - Copy the generated variables to your `.env` file
+
+Visit your app on: `http://localhost:3000`. You can:
+
+- Interact with your smart contract using the `Debug Contracts` page
+- Test your Farcaster Frame by sharing your tunnel URL
+- Configure your app settings in `packages/nextjs/scaffold.config.ts`
+
+## Development
+
+- Edit your smart contracts in `packages/foundry`
+- Edit your frontend in `packages/nextjs`
 - Edit your deployment scripts in `packages/foundry/script`
+- Configure your Frame metadata in `.well-known/farcaster.json`
 
 ## Deploying to Monad
 

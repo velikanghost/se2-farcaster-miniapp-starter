@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-const Home = dynamic(() => import("~~/components/Home"), {
+const Home = dynamic(() => import("~~/components/home"), {
   ssr: false,
   loading: () => <div>Loading...</div>,
 });

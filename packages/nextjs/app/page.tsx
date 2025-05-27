@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import App from "~~/components/App";
+import App from "~~/components/app";
 import { APP_URL } from "~~/utils/constants";
 
 const frame = {
