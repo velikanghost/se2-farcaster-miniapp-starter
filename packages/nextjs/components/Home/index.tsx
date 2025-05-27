@@ -13,7 +13,7 @@ export default function Home() {
   const { signIn, isLoading, isSignedIn, user } = useSignIn({
     autoSignIn: true,
   });
-  const { notificationDetails } = useMiniApp();
+  const { isMiniAppReady, addMiniApp, notificationDetails } = useMiniApp();
   const [testResult, setTestResult] = useState<string>("");
   const [fid, setFid] = useState<string>("");
   const [sendNotificationResult, setSendNotificationResult] = useState("");
@@ -163,6 +163,15 @@ export default function Home() {
               View Profile
             </button>
 
+            {!notificationDetails && (
+              <button
+                onClick={addMiniApp}
+                className="px-6 py-3 font-semibold text-white transition-colors duration-200 bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+              >
+                Enable Notifications
+              </button>
+            )}
+
             {sendNotificationResult && (
               <div className="mb-2 text-sm">Send notification result: {sendNotificationResult}</div>
             )}
@@ -170,6 +179,8 @@ export default function Home() {
               onClick={() => {
                 sendNotification();
               }}
+              disabled={!notificationDetails}
+              className="px-6 py-3 font-semibold text-white transition-colors duration-200 bg-purple-600 rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Send Notification
             </button>
