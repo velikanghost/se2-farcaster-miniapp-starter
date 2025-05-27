@@ -60,38 +60,36 @@ export default function Home() {
     contractName: "YourContract",
   });
 
-  const handleSend = useCallback(() => {
-    const handleTransaction = async () => {
-      if (!connectedAddress) return;
+  const handleSend = useCallback(async () => {
+    if (!connectedAddress) return;
 
+    try {
       setIsFetching(true);
       setTxResults([]);
 
       switchChain({ chainId: monadTestnet.id });
-      try {
-        const tx = await sendTransactionAsync({
-          to: connectedAddress, // Sending to self for demo
-          value: parseEther("0.0001"),
-        });
-        console.log("hash", tx);
-        notification.success("Transaction sent");
-        setTxResults([tx]);
-      } catch (error) {
-        console.error("Error sending transaction:", error);
-        notification.error("Error sending transaction");
-      } finally {
-        setIsFetching(false);
-      }
-    };
-    handleTransaction();
-  }, [connectedAddress, sendTransactionAsync]);
+      const tx = await sendTransactionAsync({
+        to: connectedAddress,
+        value: parseEther("0.0001"),
+      });
+
+      setTxResults([tx]);
+      notification.success("Transaction sent");
+    } catch (error) {
+      console.error("Error sending transaction:", error);
+      notification.error("Error sending transaction");
+    } finally {
+      setIsFetching(false);
+    }
+  }, [connectedAddress, sendTransactionAsync, switchChain]);
 
   const sendNotification = useCallback(async () => {
-    setSendNotificationResult("");
     if (!user) {
-      console.log("No notification details or user");
+      console.log("No user available");
       return;
     }
+
+    setSendNotificationResult("");
 
     try {
       const response = await sendFrameNotification({
@@ -100,42 +98,43 @@ export default function Home() {
         body: "This is a test notification",
       });
 
-      if (response.state === "error") {
-        setSendNotificationResult(`Error: ${response.error}`);
-        return;
+      switch (response.state) {
+        case "error":
+          setSendNotificationResult(`Error: ${response.error}`);
+          break;
+        case "rate_limit":
+          setSendNotificationResult("Rate limited - please try again later");
+          break;
+        case "no_token":
+          setSendNotificationResult("Notification token is invalid - please re-enable notifications");
+          break;
+        case "success":
+          setSendNotificationResult("Success");
+          break;
       }
-
-      if (response.state === "rate_limit") {
-        setSendNotificationResult("Rate limited - please try again later");
-        return;
-      }
-
-      if (response.state === "no_token") {
-        setSendNotificationResult("Notification token is invalid - please re-enable notifications");
-        return;
-      }
-
-      setSendNotificationResult("Success");
     } catch (error) {
       setSendNotificationResult(`Error: ${error}`);
     }
-  }, [user, notificationDetails]);
+  }, [user]);
 
-  const handleViewProfile = useCallback(async () => {
+  const handleViewProfile = async () => {
     if (!username) return;
-    const user = await fetchUserByUsername(username);
-    sdk.actions.viewProfile({ fid: Number(user.fid) });
-  }, [username]);
+    try {
+      const user = await fetchUserByUsername(username);
+      await sdk.actions.viewProfile({ fid: Number(user.fid) });
+    } catch (error) {
+      notification.error("Failed to view profile");
+    }
+  };
 
   const updateGreeting = useCallback(async () => {
+    if (!value) {
+      notification.error("Please enter a value");
+      return;
+    }
+
     try {
-      if (!value) {
-        notification.error("Please enter a value");
-        return;
-      }
-
       switchChain({ chainId: monadTestnet.id });
-
       await writeContractAsync(
         {
           functionName: "setGreeting",
@@ -154,24 +153,22 @@ export default function Home() {
       console.error("Error updating greeting:", error);
       notification.error("Error updating greeting");
     }
-  }, [writeContractAsync]);
+  }, [value, writeContractAsync]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-purple-50 to-white">
-      <div className="w-full max-w-2xl p-8 space-y-8">
+      <div className="w-full max-w-2xl p-6 space-y-8">
         {/* Header Section */}
-        <div className="space-y-4 text-center">
-          <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
-            Farcaster Mini App
+        <div className="space-y-3 text-center">
+          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
+            Scaffold-ETH 2 + Farcaster Mini-App
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-xl text-gray-600">
             {isSignedIn ? "Connected to Farcaster" : "Connect your Farcaster account to get started"}
           </p>
           {address && (
-            <div className="inline-block px-4 py-2 bg-gray-100 rounded-full">
-              <p className="font-mono text-sm text-gray-600">
-                {address ? `${address.substring(0, 6)}...${address.substring(address.length - 4)}` : ""}
-              </p>
+            <div className="inline-block px-4 py-1 bg-gray-100 rounded-full">
+              <p className="font-mono text-sm text-gray-600">{truncateAddress(address)}</p>
             </div>
           )}
         </div>
@@ -210,18 +207,12 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-4">
             {/* User Profile Section */}
             {user && (
-              <div className="flex flex-col items-center p-6 space-y-4 bg-white shadow-md rounded-2xl">
-                <div className="relative">
-                  <Image
-                    src={user.pfp_url}
-                    alt="Profile"
-                    className="rounded-full ring-4 ring-purple-100"
-                    width={100}
-                    height={100}
-                  />
+              <div className="flex flex-col items-center p-4 space-y-3 bg-white shadow-md rounded-2xl">
+                <div className="relative w-20 h-20">
+                  <Image src={user.pfp_url} alt="Profile" className="w-20 h-20 rounded-full" width={80} height={80} />
                   <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-400 border-4 border-white rounded-full"></div>
                 </div>
                 <div className="text-center">
@@ -231,43 +222,12 @@ export default function Home() {
               </div>
             )}
 
-            {/* Transaction Status Section */}
-            {isConfirmed && (
-              <div className="p-4 border border-green-200 bg-green-50 rounded-xl">
-                <h3 className="font-semibold text-green-800">Transaction Confirmed</h3>
-                <ul className="mt-2 space-y-1">
-                  {txResults.map((hash, index) => (
-                    <li key={index} className="font-mono text-sm text-green-600">
-                      {truncateAddress(hash)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {isSendTxError && (
-              <div className="p-4 border border-red-200 bg-red-50 rounded-xl">
-                <p className="text-red-600">Error: {sendTxError?.message}</p>
-              </div>
-            )}
-
-            {/* Action Buttons Grid */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <button
-                onClick={handleSend}
-                disabled={isFetching}
-                className="px-6 py-3 font-semibold text-white transition-all duration-200 bg-purple-600 rounded-xl hover:bg-purple-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isFetching ? "Sending..." : "Send Transaction"}
-              </button>
-
-              <button
-                onClick={() => sdk.actions.openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}
-                className="px-6 py-3 font-semibold text-white transition-all duration-200 bg-blue-600 rounded-xl hover:bg-blue-700 hover:shadow-lg"
-              >
-                Open URL
-              </button>
-            </div>
+            <button
+              onClick={() => sdk.actions.openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}
+              className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-blue-600 rounded-xl hover:bg-blue-700 hover:shadow-lg"
+            >
+              Open External URL
+            </button>
 
             {/* Share URL Section */}
             <div className="flex justify-center">
@@ -281,24 +241,24 @@ export default function Home() {
                   }
                 }}
                 disabled={!user?.fid}
-                className="px-6 py-3 text-purple-600 transition-colors duration-200 border-2 border-purple-200 rounded-xl hover:bg-purple-50"
+                className="w-full px-6 py-3 text-purple-600 transition-colors duration-200 border-2 border-purple-200 rounded-xl hover:bg-purple-50"
               >
-                {copied ? "✓ Copied!" : "Copy Share URL"}
+                {copied ? "✓ Copied!" : "Copy App Share URL"}
               </button>
             </div>
 
             {/* Profile View Section */}
-            <div className="flex space-x-2">
+            <div className="flex flex-col gap-3">
               <input
                 type="text"
                 value={username}
                 placeholder="Enter username"
-                className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
                 onChange={e => setUsername(e.target.value)}
               />
               <button
                 onClick={handleViewProfile}
-                className="px-6 py-2 text-white transition-colors duration-200 bg-gray-800 rounded-xl hover:bg-gray-900"
+                className="w-full px-6 py-3 text-white transition-colors duration-200 bg-gray-800 rounded-xl hover:bg-gray-900"
               >
                 View Profile
               </button>
@@ -334,10 +294,45 @@ export default function Home() {
               </button>
             </div>
 
+            {/* Transaction Status Section */}
+            {isConfirmed && (
+              <div className="p-4 border border-green-200 bg-green-50 rounded-xl">
+                <h3 className="font-semibold text-green-800">Transaction Confirmed</h3>
+                <ul className="mt-2 space-y-1">
+                  {txResults.map((hash, index) => (
+                    <li
+                      onClick={() => {
+                        navigator.clipboard.writeText(hash);
+                        notification.success("Copied");
+                      }}
+                      key={index}
+                      className="font-mono text-sm text-green-600 cursor-pointer"
+                    >
+                      {truncateAddress(hash)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {isSendTxError && (
+              <div className="p-4 border border-red-200 bg-red-50 rounded-xl">
+                <p className="text-red-600">Error: {sendTxError?.message}</p>
+              </div>
+            )}
+
             {/* Greeting Section */}
-            <div className="space-y-4">
+            <div className="space-y-3">
+              <button
+                onClick={handleSend}
+                disabled={isFetching}
+                className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-purple-600 rounded-xl hover:bg-purple-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isFetching ? "Sending..." : "Send Transaction"}
+              </button>
+
               {greeting && (
-                <div className="p-4 bg-gray-50 rounded-xl">
+                <div className="p-4 border border-gray-200 bg-gray-50 rounded-xl">
                   <p className="text-gray-600">Current Greeting:</p>
                   <p className="text-lg font-semibold">{greeting}</p>
                 </div>
@@ -361,16 +356,16 @@ export default function Home() {
             </div>
 
             {/* Chain Info & Close Button */}
-            <div className="flex flex-col items-center space-y-4">
+            <div className="flex flex-col items-center space-y-3">
               {chainId && (
-                <div className="px-4 py-2 bg-gray-100 rounded-full">
-                  <p className="font-mono text-sm text-gray-600">Chain ID: {chainId}</p>
+                <div className="w-full px-4 py-1 bg-gray-100 rounded-full">
+                  <p className="my-1 font-mono text-sm text-gray-600">Chain ID: {chainId}</p>
                 </div>
               )}
 
               <button
                 onClick={() => sdk.actions.close()}
-                className="px-6 py-3 text-red-600 transition-colors duration-200 border-2 border-red-200 rounded-xl hover:bg-red-50"
+                className="w-full px-6 py-3 text-red-600 transition-colors duration-200 border-2 border-red-200 rounded-xl hover:bg-red-50"
               >
                 Close Mini App
               </button>
