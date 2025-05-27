@@ -157,7 +157,7 @@ export default function Home() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-purple-50 to-white">
-      <div className="w-full max-w-2xl p-6 space-y-8">
+      <div className="w-full max-w-2xl p-6 space-y-4">
         {/* Header Section */}
         <div className="space-y-3 text-center">
           <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
@@ -173,13 +173,13 @@ export default function Home() {
           )}
         </div>
 
-        {/* Sign In Button */}
+        {/* Sign In Button - Primary Action */}
         {!isSignedIn ? (
           <div className="flex justify-center">
             <button
               onClick={signIn}
               disabled={isLoading}
-              className="px-8 py-4 text-lg font-semibold text-white transition-all duration-200 bg-purple-600 rounded-xl hover:bg-purple-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-4 text-lg font-semibold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <span className="flex items-center space-x-2">
@@ -207,7 +207,7 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2">
             {/* User Profile Section */}
             {user && (
               <div className="flex flex-col items-center p-4 space-y-3 bg-white shadow-md rounded-2xl">
@@ -222,54 +222,62 @@ export default function Home() {
               </div>
             )}
 
+            {/* Primary Actions - Indigo */}
+            <button
+              onClick={handleSend}
+              disabled={isFetching}
+              className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isFetching ? "Sending..." : "Send MON"}
+            </button>
+
+            {/* Secondary Actions - Purple */}
             <button
               onClick={() => sdk.actions.openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}
-              className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-blue-600 rounded-xl hover:bg-blue-700 hover:shadow-lg"
+              className="w-full px-6 py-3 mt-4 font-semibold text-white transition-all duration-200 bg-purple-600 rounded-xl hover:bg-purple-700 hover:shadow-lg"
             >
               Open External URL
             </button>
 
-            {/* Share URL Section */}
-            <div className="flex justify-center">
-              <button
-                onClick={async () => {
-                  if (user?.fid) {
-                    const shareUrl = `${process.env.NEXT_PUBLIC_URL}/share/${user.fid}`;
-                    await navigator.clipboard.writeText(shareUrl);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                  }
-                }}
-                disabled={!user?.fid}
-                className="w-full px-6 py-3 text-purple-600 transition-colors duration-200 border-2 border-purple-200 rounded-xl hover:bg-purple-50"
-              >
-                {copied ? "✓ Copied!" : "Copy App Share URL"}
-              </button>
-            </div>
+            {/* Tertiary Actions - Outlined */}
+            <button
+              onClick={async () => {
+                if (user?.fid) {
+                  const shareUrl = `${process.env.NEXT_PUBLIC_URL}/share/${user.fid}`;
+                  await navigator.clipboard.writeText(shareUrl);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }
+              }}
+              disabled={!user?.fid}
+              className="w-full px-6 py-3 font-semibold text-indigo-600 transition-all duration-200 border-2 border-indigo-200 rounded-xl hover:bg-indigo-50"
+            >
+              {copied ? "✓ Copied!" : "Copy App Share URL"}
+            </button>
 
             {/* Profile View Section */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 mt-4">
               <input
                 type="text"
                 value={username}
                 placeholder="Enter username"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 onChange={e => setUsername(e.target.value)}
               />
               <button
                 onClick={handleViewProfile}
-                className="w-full px-6 py-3 text-white transition-colors duration-200 bg-gray-800 rounded-xl hover:bg-gray-900"
+                className="w-full px-6 py-3 text-white transition-all duration-200 bg-violet-600 rounded-xl hover:bg-violet-700 hover:shadow-lg"
               >
                 View Profile
               </button>
             </div>
 
             {/* Notifications Section */}
-            <div className="space-y-4">
+            <div className="mt-4 space-y-2">
               {!notificationDetails && (
                 <button
                   onClick={addMiniApp}
-                  className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-blue-600 rounded-xl hover:bg-blue-700 hover:shadow-lg"
+                  className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:shadow-lg"
                 >
                   Enable Notifications
                 </button>
@@ -323,14 +331,7 @@ export default function Home() {
 
             {/* Greeting Section */}
             <div className="space-y-3">
-              <button
-                onClick={handleSend}
-                disabled={isFetching}
-                className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-purple-600 rounded-xl hover:bg-purple-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isFetching ? "Sending..." : "Send Transaction"}
-              </button>
-
+              <h4 className="mt-4 text-xl font-semibold">Contract Interaction</h4>
               {greeting && (
                 <div className="p-4 border border-gray-200 bg-gray-50 rounded-xl">
                   <p className="text-gray-600">Current Greeting:</p>
@@ -343,12 +344,12 @@ export default function Home() {
                   type="text"
                   value={value}
                   placeholder="Enter new greeting"
-                  className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   onChange={e => setValue(e.target.value)}
                 />
                 <button
                   onClick={updateGreeting}
-                  className="px-6 py-2 text-white transition-colors duration-200 bg-purple-600 rounded-xl hover:bg-purple-700"
+                  className="px-6 py-2 text-white transition-all duration-200 bg-violet-600 rounded-xl hover:bg-violet-700 hover:shadow-lg"
                 >
                   Update
                 </button>
@@ -363,9 +364,10 @@ export default function Home() {
                 </div>
               )}
 
+              {/* Danger Action */}
               <button
                 onClick={() => sdk.actions.close()}
-                className="w-full px-6 py-3 text-red-600 transition-colors duration-200 border-2 border-red-200 rounded-xl hover:bg-red-50"
+                className="w-full px-6 py-3 font-semibold transition-all duration-200 border-2 text-rose-600 border-rose-200 rounded-xl hover:bg-rose-50"
               >
                 Close Mini App
               </button>
