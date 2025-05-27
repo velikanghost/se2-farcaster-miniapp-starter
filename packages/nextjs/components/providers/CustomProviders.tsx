@@ -1,11 +1,12 @@
 "use client";
 
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect } from "react";
 import { Eruda } from "../Eruda/ErudaProvider";
 import { MiniAppProvider } from "../contexts/miniapp-context";
 import { QueryClient } from "@tanstack/react-query";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { Toaster } from "react-hot-toast";
+import { useConnect } from "wagmi";
 import { ThemeProvider } from "~~/components/providers/ThemeProvider";
 import { useInitializeNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
 
@@ -15,6 +16,12 @@ interface ProvidersProps {
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   useInitializeNativeCurrencyPrice();
+
+  const { connect, connectors } = useConnect();
+
+  useEffect(() => {
+    connect({ connector: connectors[0] });
+  }, []);
 
   return (
     <>
