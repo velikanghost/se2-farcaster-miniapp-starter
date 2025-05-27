@@ -6,17 +6,15 @@ import { useMiniApp } from "../contexts/miniapp-context";
 import { sdk } from "@farcaster/frame-sdk";
 import { useAccount, useChainId } from "wagmi";
 import { useSignIn } from "~~/hooks/use-sign-in";
+import { fetchUserByUsername } from "~~/utils/neynar";
 import { sendFrameNotification } from "~~/utils/notifs";
-
-//import { sendNotification } from "~~/utils/notifications";
 
 export default function Home() {
   const { signIn, isLoading, isSignedIn, user } = useSignIn({
     autoSignIn: true,
   });
-  const { isMiniAppReady, addMiniApp, notificationDetails } = useMiniApp();
-  const [testResult, setTestResult] = useState<string>("");
-  const [fid, setFid] = useState<string>("");
+  const { addMiniApp, notificationDetails } = useMiniApp();
+  const [username, setUsername] = useState<string>("");
   const [sendNotificationResult, setSendNotificationResult] = useState("");
   const [copied, setCopied] = useState(false);
 
@@ -26,24 +24,6 @@ export default function Home() {
   useEffect(() => {
     console.log("user", user);
   }, [user]);
-
-  const testAuth = async () => {
-    try {
-      const res = await fetch("/api/test", {
-        credentials: "include",
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setTestResult(`Auth test failed: ${data.error}`);
-        return;
-      }
-
-      setTestResult(`Auth test succeeded! Server response: ${data.message}`);
-    } catch (error) {
-      setTestResult("Auth test failed: " + (error instanceof Error ? error.message : "Unknown error"));
-    }
-  };
 
   const sendNotification = useCallback(async () => {
     setSendNotificationResult("");
@@ -59,13 +39,32 @@ export default function Home() {
         body: "This is a test notification",
       });
 
-      console.log("res", response);
+      if (response.state === "error") {
+        setSendNotificationResult(`Error: ${response.error}`);
+        return;
+      }
+
+      if (response.state === "rate_limit") {
+        setSendNotificationResult("Rate limited - please try again later");
+        return;
+      }
+
+      if (response.state === "no_token") {
+        setSendNotificationResult("Notification token is invalid - please re-enable notifications");
+        return;
+      }
 
       setSendNotificationResult("Success");
     } catch (error) {
       setSendNotificationResult(`Error: ${error}`);
     }
   }, [user, notificationDetails]);
+
+  const handleViewProfile = useCallback(async () => {
+    if (!username) return;
+    const user = await fetchUserByUsername(username);
+    sdk.actions.viewProfile({ fid: Number(user.fid) });
+  }, [username]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 text-black bg-white">
@@ -95,12 +94,6 @@ export default function Home() {
                 </div>
               </div>
             )}
-            <button
-              onClick={testAuth}
-              className="px-6 py-3 font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
-            >
-              Test Authentication
-            </button>
 
             <button
               onClick={() => {
@@ -129,17 +122,11 @@ export default function Home() {
 
             <input
               type="text"
-              value={fid}
+              value={username}
               className="px-4 py-2 border border-gray-300 rounded-lg"
-              onChange={e => setFid(e.target.value)}
+              onChange={e => setUsername(e.target.value)}
             />
-            <button
-              onClick={() => {
-                sdk.actions.viewProfile({ fid: parseInt(fid) });
-              }}
-            >
-              View Profile
-            </button>
+            <button onClick={handleViewProfile}>View Profile</button>
 
             {!notificationDetails && (
               <button
@@ -177,8 +164,6 @@ export default function Home() {
                 Chain ID: <pre className="inline">{chainId}</pre>
               </div>
             )}
-
-            {testResult && <div className="p-4 mt-4 text-sm text-black bg-gray-100 rounded-lg">{testResult}</div>}
           </div>
         )}
       </div>
