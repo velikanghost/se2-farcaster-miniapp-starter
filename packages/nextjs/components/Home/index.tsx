@@ -7,6 +7,8 @@ import { sdk } from "@farcaster/frame-sdk";
 import { useAccount, useChainId } from "wagmi";
 import { useSignIn } from "~~/hooks/use-sign-in";
 
+//import { sendNotification } from "~~/utils/notifications";
+
 export default function Home() {
   const { signIn, isLoading, isSignedIn, user } = useSignIn({
     autoSignIn: true,
@@ -45,6 +47,7 @@ export default function Home() {
   const sendNotification = useCallback(async () => {
     setSendNotificationResult("");
     if (!notificationDetails || !user) {
+      console.log("No notification details or user");
       return;
     }
 
@@ -55,20 +58,32 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fid: user.fid,
-          notificationDetails,
+          notification: {
+            title: "Test Notification",
+            body: "This is a test notification",
+            targetUrl: window.location.href,
+          },
         }),
       });
 
-      if (response.status === 200) {
-        setSendNotificationResult("Success");
-        return;
-      } else if (response.status === 429) {
-        setSendNotificationResult("Rate limited");
+      const data = await response.json();
+
+      if (!response.ok) {
+        setSendNotificationResult(`Error: ${data.error}`);
         return;
       }
 
-      const data = await response.text();
-      setSendNotificationResult(`Error: ${data}`);
+      if (data.result?.rateLimitedTokens?.length > 0) {
+        setSendNotificationResult("Rate limited - please try again later");
+        return;
+      }
+
+      if (data.result?.invalidTokens?.length > 0) {
+        setSendNotificationResult("Notification token is invalid - please re-enable notifications");
+        return;
+      }
+
+      setSendNotificationResult("Success");
     } catch (error) {
       setSendNotificationResult(`Error: ${error}`);
     }

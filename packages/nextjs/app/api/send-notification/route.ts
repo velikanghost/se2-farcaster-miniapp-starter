@@ -6,6 +6,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { fid, notification } = body;
 
+    if (!fid || !notification) {
+      return NextResponse.json({ error: "Missing required fields: fid and notification" }, { status: 400 });
+    }
+
     const result = await sendNotification({
       fid,
       title: notification.title,
@@ -18,13 +22,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    return NextResponse.json(result.response);
+    // Return the full response from the notification service
+    return NextResponse.json({
+      success: true,
+      ...result.response,
+    });
   } catch (error) {
+    console.error("Error sending notification:", error);
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 400 },
+      { status: 500 },
     );
   }
 }

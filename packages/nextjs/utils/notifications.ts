@@ -1,7 +1,28 @@
 import { redis } from "./redis";
 import type { FrameNotificationDetails } from "@farcaster/frame-sdk";
+import { z } from "zod";
 
 const NOTIFICATION_KEY_PREFIX = "notifications:";
+
+// Notification schemas as per Farcaster docs
+export const sendNotificationRequestSchema = z.object({
+  notificationId: z.string().max(128),
+  title: z.string().max(32),
+  body: z.string().max(128),
+  targetUrl: z.string().max(256),
+  tokens: z.array(z.string()).max(100),
+});
+
+export const sendNotificationResponseSchema = z.object({
+  result: z.object({
+    successfulTokens: z.array(z.string()),
+    invalidTokens: z.array(z.string()),
+    rateLimitedTokens: z.array(z.string()),
+  }),
+});
+
+export type SendNotificationRequest = z.infer<typeof sendNotificationRequestSchema>;
+export type SendNotificationResponse = z.infer<typeof sendNotificationResponseSchema>;
 
 function getNotificationKey(fid: number): string {
   return `${NOTIFICATION_KEY_PREFIX}${fid}`;
@@ -20,11 +41,7 @@ interface SendNotificationParams {
   notificationId?: string;
 }
 
-interface NotificationResponse {
-  successfulTokens: string[];
-  invalidTokens: string[];
-  rateLimitedTokens: string[];
-}
+type SendNotificationResult = { success: true; response: SendNotificationResponse } | { success: false; error: string };
 
 export async function sendNotification({
   fid,
@@ -32,17 +49,30 @@ export async function sendNotification({
   body,
   targetUrl,
   notificationId = crypto.randomUUID(),
-}: SendNotificationParams): Promise<NotificationResponse | null> {
-  if (!redis) return null;
+}: SendNotificationParams): Promise<SendNotificationResult> {
+  if (!redis) return { success: false, error: "Redis not available" };
 
   const notificationDetails = await getUserNotificationDetails(fid);
 
   if (!notificationDetails) {
     console.log(`No notification details found for FID: ${fid}`);
-    return null;
+    return { success: false, error: "No notification details found" };
   }
 
   const { url, token } = notificationDetails;
+
+  // Validate request against schema
+  const requestValidation = sendNotificationRequestSchema.safeParse({
+    notificationId,
+    title,
+    body,
+    targetUrl: targetUrl || process.env.NEXT_PUBLIC_URL,
+    tokens: [token],
+  });
+
+  if (!requestValidation.success) {
+    return { success: false, error: requestValidation.error.message };
+  }
 
   try {
     const response = await fetch(url, {
@@ -50,29 +80,28 @@ export async function sendNotification({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        notificationId,
-        title,
-        body,
-        targetUrl: targetUrl || process.env.NEXT_PUBLIC_URL,
-        tokens: [token],
-      }),
+      body: JSON.stringify(requestValidation.data),
     });
 
     if (!response.ok) {
       throw new Error(`Failed to send notification: ${response.statusText}`);
     }
 
-    const result = await response.json();
+    const responseData = await response.json();
+    const responseValidation = sendNotificationResponseSchema.safeParse(responseData);
 
-    // If the token is invalid, remove it from Redis
-    if (result.invalidTokens?.includes(token)) {
+    if (!responseValidation.success) {
+      return { success: false, error: "Invalid response format from notification server" };
+    }
+
+    // Handle invalid tokens
+    if (responseValidation.data.result.invalidTokens.includes(token)) {
       await redis.del(getNotificationKey(fid));
     }
 
-    return result;
+    return { success: true, response: responseValidation.data };
   } catch (error) {
     console.error("Error sending notification:", error);
-    return null;
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
   }
 }
