@@ -8,8 +8,8 @@ if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
 }
 
 const redis = new Redis({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
+  url: process.env.KV_REST_API_URL || "https://finer-zebra-13056.upstash.io",
+  token: process.env.KV_REST_API_TOKEN || "ATMAAAIjcDE0NDE3ZmM1MGUxNDg0NjM4OWEzNmUzNDZlNWY3M2VlOHAxMA",
 });
 
 function getUserNotificationDetailsKey(fid: number): string {
