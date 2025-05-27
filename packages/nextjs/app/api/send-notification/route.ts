@@ -1,39 +1,87 @@
-import { NextResponse } from "next/server";
-import { sendNotification } from "~~/utils/notifications";
+import { NextRequest } from "next/server";
+import { SendNotificationRequest, sendNotificationResponseSchema } from "@farcaster/frame-sdk";
+import { z } from "zod";
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { fid, notification } = body;
+const requestSchema = z.object({
+  token: z.string(),
+  url: z.string(),
+  targetUrl: z.string(),
+});
 
-    if (!fid || !notification) {
-      return NextResponse.json({ error: "Missing required fields: fid and notification" }, { status: 400 });
+export async function POST(request: NextRequest) {
+  const requestJson = await request.json();
+  const requestBody = requestSchema.safeParse(requestJson);
+
+  if (requestBody.success === false) {
+    return Response.json({ success: false, errors: requestBody.error.errors }, { status: 400 });
+  }
+
+  const response = await fetch(requestBody.data.url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      notificationId: crypto.randomUUID(),
+      title: "Hello from Frames v2!",
+      body: "This is a test notification",
+      targetUrl: requestBody.data.targetUrl,
+      tokens: [requestBody.data.token],
+    } satisfies SendNotificationRequest),
+  });
+
+  const responseJson = await response.json();
+
+  if (response.status === 200) {
+    // Ensure correct response
+    const responseBody = sendNotificationResponseSchema.safeParse(responseJson);
+    if (responseBody.success === false) {
+      return Response.json({ success: false, errors: responseBody.error.errors }, { status: 500 });
     }
 
-    const result = await sendNotification({
-      fid,
-      title: notification.title,
-      body: notification.body,
-      targetUrl: notification.targetUrl,
-      notificationId: notification.notificationId,
-    });
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
+    // Fail when rate limited
+    if (responseBody.data.result.rateLimitedTokens.length) {
+      return Response.json({ success: false, error: "Rate limited" }, { status: 429 });
     }
 
-    // Return the full response from the notification service
-    return NextResponse.json({
-      success: true,
-      ...result.response,
-    });
-  } catch (error) {
-    console.error("Error sending notification:", error);
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    return Response.json({ success: true });
+  } else {
+    return Response.json({ success: false, error: responseJson }, { status: 500 });
   }
 }
+
+// import { NextRequest } from "next/server";
+// import { notificationDetailsSchema } from "@farcaster/frame-core";
+// import { z } from "zod";
+// import { setUserNotificationDetails } from "~~/utils/kv";
+// import { sendFrameNotification } from "~~/utils/notifs";
+
+// const requestSchema = z.object({
+//   fid: z.number(),
+//   notificationDetails: notificationDetailsSchema,
+// });
+
+// export async function POST(request: NextRequest) {
+//   const requestJson = await request.json();
+//   const requestBody = requestSchema.safeParse(requestJson);
+
+//   if (requestBody.success === false) {
+//     return Response.json({ success: false, errors: requestBody.error.errors }, { status: 400 });
+//   }
+
+//   await setUserNotificationDetails(requestBody.data.fid, requestBody.data.notificationDetails);
+
+//   const sendResult = await sendFrameNotification({
+//     fid: requestBody.data.fid,
+//     title: "Test notification",
+//     body: "Sent at " + new Date().toISOString(),
+//   });
+
+//   if (sendResult.state === "error") {
+//     return Response.json({ success: false, error: sendResult.error }, { status: 500 });
+//   } else if (sendResult.state === "rate_limit") {
+//     return Response.json({ success: false, error: "Rate limited" }, { status: 429 });
+//   }
+
+//   return Response.json({ success: true });
+// }

@@ -6,6 +6,7 @@ import { useMiniApp } from "../contexts/miniapp-context";
 import { sdk } from "@farcaster/frame-sdk";
 import { useAccount, useChainId } from "wagmi";
 import { useSignIn } from "~~/hooks/use-sign-in";
+import { sendFrameNotification } from "~~/utils/notifs";
 
 //import { sendNotification } from "~~/utils/notifications";
 
@@ -52,36 +53,44 @@ export default function Home() {
     }
 
     try {
-      const response = await fetch("/api/send-notification", {
-        method: "POST",
-        mode: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fid: user.fid,
-          notification: {
-            title: "Test Notification",
-            body: "This is a test notification",
-            targetUrl: window.location.href,
-          },
-        }),
+      const response = await sendFrameNotification({
+        fid: Number(user.fid),
+        title: "Test Notification",
+        body: "This is a test notification",
       });
 
-      const data = await response.json();
+      console.log("res", response);
 
-      if (!response.ok) {
-        setSendNotificationResult(`Error: ${data.error}`);
-        return;
-      }
+      // const response = await fetch("/api/send-notification", {
+      //   method: "POST",
+      //   mode: "same-origin",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({
+      //     fid: user.fid,
+      //     notification: {
+      //       title: "Test Notification",
+      //       body: "This is a test notification",
+      //       targetUrl: window.location.href,
+      //     },
+      //   }),
+      // });
 
-      if (data.result?.rateLimitedTokens?.length > 0) {
-        setSendNotificationResult("Rate limited - please try again later");
-        return;
-      }
+      // const data = await response.json();
 
-      if (data.result?.invalidTokens?.length > 0) {
-        setSendNotificationResult("Notification token is invalid - please re-enable notifications");
-        return;
-      }
+      // if (!response.ok) {
+      //   setSendNotificationResult(`Error: ${data.error}`);
+      //   return;
+      // }
+
+      // if (data.result?.rateLimitedTokens?.length > 0) {
+      //   setSendNotificationResult("Rate limited - please try again later");
+      //   return;
+      // }
+
+      // if (data.result?.invalidTokens?.length > 0) {
+      //   setSendNotificationResult("Notification token is invalid - please re-enable notifications");
+      //   return;
+      // }
 
       setSendNotificationResult("Success");
     } catch (error) {
