@@ -28,6 +28,12 @@ export default function Home() {
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
 
+  const { connect, connectors } = useConnect();
+
+  useEffect(() => {
+    connect({ connector: connectors[0] });
+  }, [user]);
+
   const { address: connectedAddress } = useAccount();
   const [isFetching, setIsFetching] = useState(false);
   const [txResults, setTxResults] = useState<string[]>([]);
