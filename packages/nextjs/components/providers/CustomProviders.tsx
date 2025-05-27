@@ -1,8 +1,8 @@
 "use client";
 
 import React, { ReactNode } from "react";
+import { Eruda } from "../Eruda/ErudaProvider";
 import { MiniAppProvider } from "../contexts/miniapp-context";
-import { Eruda } from "../eruda/ErudaProvider";
 import { QueryClient } from "@tanstack/react-query";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { Toaster } from "react-hot-toast";
