@@ -1,11 +1,15 @@
 import { NextRequest } from "next/server";
+import { notificationDetailsSchema } from "@farcaster/frame-core";
 import { SendNotificationRequest, sendNotificationResponseSchema } from "@farcaster/frame-sdk";
 import { z } from "zod";
+import { setUserNotificationDetails } from "~~/utils/kv";
+import { sendFrameNotification } from "~~/utils/notifs";
 
 const requestSchema = z.object({
   token: z.string(),
   url: z.string(),
   targetUrl: z.string(),
+  fid: z.number().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -15,6 +19,14 @@ export async function POST(request: NextRequest) {
   if (requestBody.success === false) {
     return Response.json({ success: false, errors: requestBody.error.errors }, { status: 400 });
   }
+
+  const notificationDetails = {
+    token: requestBody.data.token,
+    url: requestBody.data.url,
+  };
+
+  // Store notification details in KV store
+  await setUserNotificationDetails(requestBody.data.fid || 0, notificationDetails);
 
   const response = await fetch(requestBody.data.url, {
     method: "POST",
