@@ -1,13 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Image from "next/image";
 import { useMiniApp } from "../contexts/miniapp-context";
 import { sdk } from "@farcaster/frame-sdk";
-import { useAccount, useChainId } from "wagmi";
+import { parseEther } from "viem";
+import { useAccount, useChainId, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useSignIn } from "~~/hooks/use-sign-in";
 import { fetchUserByUsername } from "~~/utils/neynar";
 import { sendFrameNotification } from "~~/utils/notifs";
+import { notification } from "~~/utils/scaffold-eth";
+import { truncateAddress } from "~~/utils/truncate";
 
 export default function Home() {
   const { signIn, isLoading, isSignedIn, user } = useSignIn({
@@ -17,13 +21,54 @@ export default function Home() {
   const [username, setUsername] = useState<string>("");
   const [sendNotificationResult, setSendNotificationResult] = useState("");
   const [copied, setCopied] = useState(false);
+  const [value, setValue] = useState<string>("");
 
   const { address } = useAccount();
   const chainId = useChainId();
 
-  useEffect(() => {
-    console.log("user", user);
-  }, [user]);
+  const { address: connectedAddress } = useAccount();
+  const [isFetching, setIsFetching] = useState(false);
+  const [txResults, setTxResults] = useState<string[]>([]);
+
+  const { sendTransactionAsync, data, error: sendTxError, isError: isSendTxError } = useSendTransaction();
+
+  const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash: data,
+  });
+
+  const { data: greeting } = useScaffoldReadContract({
+    contractName: "YourContract",
+    functionName: "greeting",
+  });
+
+  const { writeContractAsync } = useScaffoldWriteContract({
+    contractName: "YourContract",
+  });
+
+  const handleSend = useCallback(() => {
+    const handleBatchTransactions = async () => {
+      if (!connectedAddress) return;
+
+      setIsFetching(true);
+      setTxResults([]);
+
+      try {
+        const tx = await sendTransactionAsync({
+          to: connectedAddress, // Sending to self for demo
+          value: parseEther("0.0001"),
+        });
+        console.log("hash", tx);
+        notification.success("Transaction sent");
+        setTxResults([tx]);
+      } catch (error) {
+        console.error("Error sending batch transactions:", error);
+        alert("Error sending batch transactions. Check console for details.");
+      } finally {
+        setIsFetching(false);
+      }
+    };
+    handleBatchTransactions();
+  }, [connectedAddress, sendTransactionAsync]);
 
   const sendNotification = useCallback(async () => {
     setSendNotificationResult("");
@@ -66,6 +111,33 @@ export default function Home() {
     sdk.actions.viewProfile({ fid: Number(user.fid) });
   }, [username]);
 
+  const updateGreeting = useCallback(async () => {
+    try {
+      if (!value) {
+        notification.error("Please enter a value");
+        return;
+      }
+
+      await writeContractAsync(
+        {
+          functionName: "setGreeting",
+          args: [value],
+          value: parseEther("0.0001"),
+        },
+        {
+          onSuccess: tx => {
+            notification.success("Greeting updated");
+            console.log("tx", tx);
+            setTxResults([tx]);
+          },
+        },
+      );
+    } catch (error) {
+      console.error("Error updating greeting:", error);
+      notification.error("Error updating greeting");
+    }
+  }, [writeContractAsync]);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 text-black bg-white">
       <div className="space-y-4 text-center">
@@ -94,6 +166,26 @@ export default function Home() {
                 </div>
               </div>
             )}
+
+            {isConfirmed && (
+              <div>
+                <p>Transaction confirmed</p>
+                <ul>
+                  {txResults.map((hash, index) => (
+                    <li key={index}>{truncateAddress(hash)}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {isSendTxError && <div>Error: {sendTxError?.message}</div>}
+            <button
+              className="px-6 py-3 font-semibold text-white transition-colors duration-200 bg-purple-600 rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleSend}
+              disabled={isFetching}
+            >
+              {isFetching ? "Sending..." : "Send"}
+            </button>
 
             <button
               onClick={() => {
@@ -157,6 +249,21 @@ export default function Home() {
               className="px-6 py-3 font-semibold text-white transition-colors duration-200 bg-red-600 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
             >
               Close
+            </button>
+
+            {greeting && <div>Greeting: {greeting}</div>}
+
+            <input
+              type="text"
+              value={value}
+              className="px-4 py-2 border border-gray-300 rounded-lg"
+              onChange={e => setValue(e.target.value)}
+            />
+            <button
+              onClick={updateGreeting}
+              className="px-6 py-3 font-semibold text-white transition-colors duration-200 bg-purple-600 rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+            >
+              Set Greeting
             </button>
 
             {chainId && (

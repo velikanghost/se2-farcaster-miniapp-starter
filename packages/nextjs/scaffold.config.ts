@@ -1,4 +1,3 @@
-//import { defineChain } from "viem";
 import * as chains from "viem/chains";
 import { monadTestnet } from "wagmi/chains";
 
@@ -11,23 +10,6 @@ export type ScaffoldConfig = {
 };
 
 export const DEFAULT_ALCHEMY_API_KEY = "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
-
-// const monadTestnet = defineChain({
-//   id: 10143,
-//   name: "Monad Testnet",
-//   nativeCurrency: { name: "MON", symbol: "MON", decimals: 18 },
-//   rpcUrls: {
-//     default: {
-//       http: ["https://testnet-rpc.monad.xyz/"],
-//     },
-//   },
-//   blockExplorers: {
-//     default: {
-//       name: "Monad Testnet BlockVision",
-//       url: "https://sourcify-api-monad.blockvision.org",
-//     },
-//   },
-// });
 
 const scaffoldConfig = {
   // The networks on which your DApp is live
