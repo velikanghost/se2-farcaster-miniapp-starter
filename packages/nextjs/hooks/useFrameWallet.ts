@@ -1,28 +1,50 @@
-import { useEffect } from "react";
-import { useConnect, useSwitchChain } from "wagmi";
+import { useEffect, useState } from "react";
+import { useAccount, useConnect, useSwitchChain } from "wagmi";
 import { monadTestnet } from "wagmi/chains";
 
 /**
  * Hook to handle Frame wallet connection and chain switching
- * @returns Object containing connection status and error if any
+ * @returns Object containing connection status, success states and error if any
  */
 export const useFrameWallet = () => {
-  const { connect, connectors, error: connectError } = useConnect();
-  const { switchChain, error: switchError } = useSwitchChain();
+  const { connect, connectors, error: connectError, isSuccess: isConnectSuccess } = useConnect();
+  const { switchChain, error: switchError, isSuccess: isSwitchSuccess } = useSwitchChain();
+  const { isConnected } = useAccount();
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Connect to the first available connector (Frame connector)
-    if (connectors[0]) {
-      connect({ connector: connectors[0] });
-    }
-  }, [connect, connectors]);
+    const initializeWallet = async () => {
+      if (!isConnected && connectors[0] && !isInitialized) {
+        try {
+          await connect({ connector: connectors[0] });
+          setIsInitialized(true);
+        } catch (error) {
+          console.error("Failed to connect wallet:", error);
+        }
+      }
+    };
+
+    initializeWallet();
+  }, [connect, connectors, isConnected, isInitialized]);
 
   useEffect(() => {
-    // Switch to Monad testnet
-    switchChain({ chainId: monadTestnet.id });
-  }, [switchChain]);
+    const switchToMonad = async () => {
+      if (isConnected && !isSwitchSuccess) {
+        try {
+          await switchChain({ chainId: monadTestnet.id });
+        } catch (error) {
+          console.error("Failed to switch chain:", error);
+        }
+      }
+    };
+
+    switchToMonad();
+  }, [switchChain, isConnected, isSwitchSuccess]);
 
   return {
     error: connectError || switchError,
+    isSuccess: isConnected && isSwitchSuccess,
+    isConnected,
+    isSwitchSuccess,
   };
 };
