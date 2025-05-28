@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Image from "next/image";
 import { useMiniApp } from "../contexts/miniapp-context";
 import { sdk } from "@farcaster/frame-sdk";
