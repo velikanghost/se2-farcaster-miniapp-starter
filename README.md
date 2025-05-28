@@ -7,7 +7,7 @@
 
 🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on Monad and other blockchain integrated with Farcaster Mini-Apps. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts while leveraging Farcaster's social features.
 
-⚙️ Built using NextJS, RainbowKit, Foundry, Wagmi, Viem, Typescript, and Farcaster Frame SDK.
+⚙️ Built using NextJS, Foundry, Farcaster Frame SDK, Wagmi, Viem, Typescript, and Neynar.
 
 ## Features
 
@@ -26,7 +26,7 @@
 - 🛠️ **MiniApp Provider**: Built-in context provider for Farcaster Mini-App functionality
 - 🎨 **Dynamic Preview Images**: Support for custom preview images in your frames
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+![Debug Contracts tab](packages/nextjs/public/thumb.png)
 
 ## Farcaster Frame Features
 
@@ -114,7 +114,7 @@ The environment variables enable the following features:
 - Redis API keys - Enable Webhooks and background notifications for your application by storing users notification details
 
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 
 5. Start the development server:
