@@ -5,14 +5,7 @@ import Image from "next/image";
 import { useMiniApp } from "../contexts/miniapp-context";
 import { sdk } from "@farcaster/frame-sdk";
 import { parseEther } from "viem";
-import {
-  useAccount,
-  useChainId,
-  useConnect,
-  useSendTransaction,
-  useSwitchChain,
-  useWaitForTransactionReceipt,
-} from "wagmi";
+import { useAccount, useChainId, useSendTransaction, useSwitchChain, useWaitForTransactionReceipt } from "wagmi";
 import { monadTestnet } from "wagmi/chains";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useSignIn } from "~~/hooks/useSignIn";
@@ -59,6 +52,8 @@ export default function Home() {
     try {
       setIsFetching(true);
       setTxResults([]);
+
+      switchChain({ chainId: monadTestnet.id });
 
       const tx = await sendTransactionAsync({
         to: connectedAddress,
