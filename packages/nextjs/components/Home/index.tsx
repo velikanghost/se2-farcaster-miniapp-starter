@@ -39,9 +39,9 @@ export default function Home() {
   const [isWaiting, setIsWaiting] = useState(false);
   const [txResults, setTxResults] = useState<string[]>([]);
 
-  // useEffect(() => {
-  //   connect({ connector: connectors[0] });
-  // }, [user]);
+  useEffect(() => {
+    connect({ connector: connectors[0] });
+  }, [user]);
 
   const { sendTransactionAsync, data, error: sendTxError, isError: isSendTxError } = useSendTransaction();
 
@@ -65,7 +65,7 @@ export default function Home() {
       setIsFetching(true);
       setTxResults([]);
 
-      //switchChain({ chainId: monadTestnet.id });
+      switchChain({ chainId: monadTestnet.id });
 
       const tx = await sendTransactionAsync({
         to: connectedAddress,
