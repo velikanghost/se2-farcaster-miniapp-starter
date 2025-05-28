@@ -82,6 +82,8 @@ cd se2-foundry-monad
 yarn install && forge install --root packages/foundry
 ```
 
+- if you run into issues with forge-std files, run
+
 ```bash
 rm -rf lib/forge-std && forge install foundry-rs/forge-std --no-commit
 ```

@@ -10,7 +10,6 @@ import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "~~/components/providers/ThemeProvider";
 import { useInitializeNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
-import { useFrameWallet } from "~~/hooks/useFrameWallet";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -18,7 +17,6 @@ interface ProvidersProps {
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   useInitializeNativeCurrencyPrice();
-  useFrameWallet();
 
   return (
     <>
