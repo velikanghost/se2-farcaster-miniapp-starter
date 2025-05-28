@@ -26,8 +26,6 @@ export default function Home() {
     autoSignIn: true,
   });
   const { addMiniApp, context } = useMiniApp();
-  const { switchChain } = useSwitchChain();
-  const { connect, connectors } = useConnect();
   const { address: connectedAddress } = useAccount();
   const chainId = useChainId();
 
@@ -38,10 +36,6 @@ export default function Home() {
   const [isFetching, setIsFetching] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
   const [txResults, setTxResults] = useState<string[]>([]);
-
-  useEffect(() => {
-    connect({ connector: connectors[0] });
-  }, [user]);
 
   const { sendTransactionAsync, data, error: sendTxError, isError: isSendTxError } = useSendTransaction();
 
@@ -65,8 +59,6 @@ export default function Home() {
       setIsFetching(true);
       setTxResults([]);
 
-      switchChain({ chainId: monadTestnet.id });
-
       const tx = await sendTransactionAsync({
         to: connectedAddress,
         value: parseEther("0.0001"),
@@ -77,6 +69,7 @@ export default function Home() {
     } catch (error) {
       console.error("Error sending transaction:", error);
       notification.error("Error sending transaction");
+      setIsFetching(false);
     } finally {
       setIsFetching(false);
     }
@@ -136,8 +129,6 @@ export default function Home() {
       notification.error("Please enter a value");
       return;
     }
-
-    switchChain({ chainId: monadTestnet.id });
 
     try {
       await writeContractAsync(
