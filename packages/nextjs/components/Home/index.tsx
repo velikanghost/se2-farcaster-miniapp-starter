@@ -25,24 +25,23 @@ export default function Home() {
   const { signIn, isLoading, isSignedIn, user } = useSignIn({
     autoSignIn: true,
   });
-  const { addMiniApp, notificationDetails, context } = useMiniApp();
+  const { addMiniApp, context } = useMiniApp();
+  const { switchChain } = useSwitchChain();
+  const { connect, connectors } = useConnect();
+  const { address: connectedAddress } = useAccount();
+  const chainId = useChainId();
+
   const [username, setUsername] = useState<string>("");
   const [sendNotificationResult, setSendNotificationResult] = useState("");
   const [copied, setCopied] = useState(false);
   const [value, setValue] = useState<string>("");
-  const { address } = useAccount();
-  const chainId = useChainId();
-  const { switchChain } = useSwitchChain();
-
-  const { connect, connectors } = useConnect();
+  const [isFetching, setIsFetching] = useState(false);
+  const [isWaiting, setIsWaiting] = useState(false);
+  const [txResults, setTxResults] = useState<string[]>([]);
 
   useEffect(() => {
     connect({ connector: connectors[0] });
   }, [user]);
-
-  const { address: connectedAddress } = useAccount();
-  const [isFetching, setIsFetching] = useState(false);
-  const [txResults, setTxResults] = useState<string[]>([]);
 
   const { sendTransactionAsync, data, error: sendTxError, isError: isSendTxError } = useSendTransaction();
 
@@ -89,6 +88,7 @@ export default function Home() {
       return;
     }
 
+    setIsWaiting(true);
     setSendNotificationResult("");
 
     try {
@@ -97,6 +97,8 @@ export default function Home() {
         title: "Test Notification",
         body: "This is a test notification",
       });
+
+      setIsWaiting(false);
 
       switch (response.state) {
         case "error":
@@ -115,6 +117,7 @@ export default function Home() {
     } catch (error) {
       setSendNotificationResult(`Error: ${error}`);
       console.log("Error sending notification:", error);
+      setIsWaiting(false);
     }
   }, [user]);
 
@@ -167,9 +170,9 @@ export default function Home() {
           <p className="text-xl text-gray-600">
             {isSignedIn ? "Connected to Farcaster" : "Connect your Farcaster account to get started"}
           </p>
-          {address && (
+          {connectedAddress && (
             <div className="inline-block px-4 py-1 bg-gray-100 rounded-full">
-              <p className="font-mono text-sm text-gray-600">{truncateAddress(address)}</p>
+              <p className="font-mono text-sm text-gray-600">{truncateAddress(connectedAddress)}</p>
             </div>
           )}
         </div>
@@ -296,10 +299,10 @@ export default function Home() {
 
               <button
                 onClick={sendNotification}
-                disabled={!context?.client?.added}
+                disabled={!context?.client?.added || isWaiting}
                 className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-purple-600 rounded-xl hover:bg-purple-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Send Test Notification
+                {isWaiting ? "Sending..." : "Send Test Notification"}
               </button>
             </div>
 
