@@ -25,7 +25,6 @@ import { notification } from "~~/utils/scaffold-eth";
 import { truncateAddress } from "~~/utils/truncateAddress";
 
 export default function Home() {
-  useFrameWallet();
   const { signIn, isLoading, isSignedIn, user } = useSignIn({
     autoSignIn: true,
   });
@@ -37,13 +36,13 @@ export default function Home() {
   const router = useRouter();
   const { address } = useAccount();
   const chainId = useChainId();
-  // const { switchChain } = useSwitchChain();
+  const { switchChain } = useSwitchChain();
 
-  // const { connect, connectors } = useConnect();
+  const { connect, connectors } = useConnect();
 
-  // useEffect(() => {
-  //   connect({ connector: connectors[0] });
-  // }, [user]);
+  useEffect(() => {
+    connect({ connector: connectors[0] });
+  }, [user]);
 
   const { address: connectedAddress } = useAccount();
   const [isFetching, setIsFetching] = useState(false);
@@ -70,6 +69,8 @@ export default function Home() {
     try {
       setIsFetching(true);
       setTxResults([]);
+
+      switchChain({ chainId: monadTestnet.id });
 
       const tx = await sendTransactionAsync({
         to: connectedAddress,
@@ -135,6 +136,8 @@ export default function Home() {
       notification.error("Please enter a value");
       return;
     }
+
+    switchChain({ chainId: monadTestnet.id });
 
     try {
       await writeContractAsync(
