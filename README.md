@@ -85,6 +85,7 @@ yarn install && forge install --root packages/foundry
 - if you run into issues with forge-std files, run
 
 ```bash
+cd packages/foundry
 rm -rf lib/forge-std && forge install foundry-rs/forge-std --no-commit
 ```
 
@@ -104,27 +105,48 @@ yarn deploy
 
 This command deploys a test smart contract to the local network. The contract is located in `packages/foundry/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/foundry/script` to deploy the contract to the network.
 
-4. On a third terminal, start your NextJS app:
+4. Copy the `.env.example` file to `.env.local` and fill in the values
+
+The environment variables enable the following features:
+
+- Frame metadata - Sets up the Frame Embed that will be shown when you cast your frame
+- Account assocation - Allows users to add your frame to their account, enables notifications
+- Redis API keys - Enable Webhooks and background notifications for your application by storing users notification details
+
+```bash
+cp .env.example .env
+```
+
+5. Start the development server:
 
 ```bash
 yarn start
 ```
 
-5. Run a local tunneling server (required for Farcaster Frame development):
+6. Run a local tunneling server (required for Farcaster Frame development):
 
-   - Use [NGROK](https://ngrok.com/) or [Local Tunnel](https://theboroer.github.io/localtunnel-www/)
-   - This will allow your local development server to be accessible from the internet
+- Use [CLOUDFLARE](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) or [Local Tunnel](https://theboroer.github.io/localtunnel-www/)
 
-6. Generate your Farcaster Manifest variables:
-   - Visit the [Farcaster Frame Manifest Tool](https://frames.wnxm.ph/)
-   - Enter your tunnel domain
-   - Copy the generated variables to your `.env` file
+  Here we use cloudflare like this, run
 
-Visit your app on: `http://localhost:3000`. You can:
+  ```bash
+  cloudflared tunnel --url http://localhost:3000
+  ```
+
+- This will allow your local development server to be accessible from the internet
+- Also copy the generated domain to your NEXT_PUBLIC_URL in your `.env` file
+
+7. Generate your Farcaster Manifest variables
+
+- Follow these [instructions](https://miniapps.farcaster.xyz/docs/guides/publishing)
+- Visit [Manifest Tool](https://farcaster.xyz/~/developers/mini-apps/manifest)
+- Paste your tunnel domain
+
+You can:
 
 - Interact with your smart contract using the `Debug Contracts` page
-- Test your Farcaster Frame by sharing your tunnel URL
-- Configure your app settings in `packages/nextjs/scaffold.config.ts`
+- Test your Farcaster Mini-App
+- Configure your scaffold in `packages/nextjs/scaffold.config.ts`
 
 ## Development
 
@@ -187,9 +209,11 @@ You should be able to see a URL to your app on Vercel.
 
 ## Documentation
 
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
-
-To know more about its features, check out our [website](https://scaffoldeth.io).
+- [Scaffold-ETH 2](https://docs.scaffoldeth.io)
+- [Farcaster Mini Apps](https://miniapps.farcaster.xyz/docs/getting-started)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [Neynar](https://neynar.com)
 
 ## Contributing to Scaffold-ETH 2
 
