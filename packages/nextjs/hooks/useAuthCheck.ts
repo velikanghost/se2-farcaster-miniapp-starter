@@ -1,4 +1,4 @@
-import { useApiQuery } from "./use-api-query";
+import { useApiQuery } from "./useApiQuery";
 
 export const useAuthCheck = () => {
   return useApiQuery({

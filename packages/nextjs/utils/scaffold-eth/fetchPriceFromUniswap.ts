@@ -34,23 +34,23 @@ export const fetchPriceFromUniswap = async (targetNetwork: ChainWithAttributes):
     );
     const pairAddress = Pair.getAddress(TOKEN, DAI) as Address;
 
-    const wagmiConfig = {
+    const config = {
       address: pairAddress,
       abi: ABI,
-    };
+    } as const;
 
     const reserves = await publicClient.readContract({
-      ...wagmiConfig,
+      ...config,
       functionName: "getReserves",
     });
 
     const token0Address = await publicClient.readContract({
-      ...wagmiConfig,
+      ...config,
       functionName: "token0",
     });
 
     const token1Address = await publicClient.readContract({
-      ...wagmiConfig,
+      ...config,
       functionName: "token1",
     });
     const token0 = [TOKEN, DAI].find(token => token.address === token0Address) as Token;

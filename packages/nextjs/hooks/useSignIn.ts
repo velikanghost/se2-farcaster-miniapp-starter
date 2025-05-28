@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { useApiMutation } from "./use-api-mutation";
-import { useApiQuery } from "./use-api-query";
-import { useAuthCheck } from "./use-auth-check";
+import { useApiMutation } from "./useApiMutation";
+import { useApiQuery } from "./useApiQuery";
+import { useAuthCheck } from "./useAuthCheck";
 import { sdk } from "@farcaster/frame-sdk";
 import { useMiniApp } from "~~/components/contexts/miniapp-context";
 import { MESSAGE_EXPIRATION_TIME } from "~~/utils/constants";

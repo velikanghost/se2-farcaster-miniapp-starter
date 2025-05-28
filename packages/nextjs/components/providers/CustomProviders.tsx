@@ -1,14 +1,16 @@
 "use client";
 
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode } from "react";
 import { Eruda } from "../Eruda/ErudaProvider";
+import { Footer } from "../UI/Footer";
+import { Header } from "../UI/Header";
 import { MiniAppProvider } from "../contexts/miniapp-context";
 import { QueryClient } from "@tanstack/react-query";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { Toaster } from "react-hot-toast";
-import { useConnect } from "wagmi";
 import { ThemeProvider } from "~~/components/providers/ThemeProvider";
 import { useInitializeNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
+import { useFrameWallet } from "~~/hooks/useFrameWallet";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -16,6 +18,7 @@ interface ProvidersProps {
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   useInitializeNativeCurrencyPrice();
+  useFrameWallet();
 
   return (
     <>
@@ -41,7 +44,11 @@ export function Providers({ children }: ProvidersProps) {
       <MiniAppProvider addMiniAppOnLoad={false}>
         <ProgressBar height="3px" color="#2299dd" />
         <ScaffoldEthApp>
-          <Eruda>{children}</Eruda>
+          <Eruda>
+            <Header />
+            {children}
+            <Footer />
+          </Eruda>
         </ScaffoldEthApp>
       </MiniAppProvider>
     </ThemeProvider>

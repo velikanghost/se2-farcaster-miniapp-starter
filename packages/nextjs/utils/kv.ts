@@ -3,7 +3,7 @@ import { Redis } from "@upstash/redis";
 
 if (!process.env.NEXT_PUBLIC_KV_REST_API_URL || !process.env.NEXT_PUBLIC_KV_REST_API_TOKEN) {
   console.warn(
-    "REDIS_URL or REDIS_TOKEN environment variable is not defined, please add to enable background notifications and webhooks.",
+    "KV_REST_API_URL or KV_REST_API_TOKEN environment variable is not defined, please add to enable background notifications and webhooks.",
   );
 }
 
