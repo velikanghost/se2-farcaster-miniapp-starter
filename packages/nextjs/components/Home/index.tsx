@@ -5,14 +5,7 @@ import Image from "next/image";
 import { useMiniApp } from "../contexts/miniapp-context";
 import { sdk } from "@farcaster/frame-sdk";
 import { parseEther } from "viem";
-import {
-  useAccount,
-  useChainId,
-  useConnect,
-  useSendTransaction,
-  useSwitchChain,
-  useWaitForTransactionReceipt,
-} from "wagmi";
+import { useAccount, useChainId, useSendTransaction, useSwitchChain, useWaitForTransactionReceipt } from "wagmi";
 import { monadTestnet } from "wagmi/chains";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useSignIn } from "~~/hooks/useSignIn";
@@ -26,10 +19,9 @@ export default function Home() {
     autoSignIn: true,
   });
   const { addMiniApp, context } = useMiniApp();
-  const { switchChain } = useSwitchChain();
-  const { connect, connectors } = useConnect();
   const { address: connectedAddress } = useAccount();
   const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
 
   const [username, setUsername] = useState<string>("");
   const [sendNotificationResult, setSendNotificationResult] = useState("");
@@ -38,10 +30,6 @@ export default function Home() {
   const [isFetching, setIsFetching] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
   const [txResults, setTxResults] = useState<string[]>([]);
-
-  useEffect(() => {
-    connect({ connector: connectors[0] });
-  }, [user]);
 
   const { sendTransactionAsync, data, error: sendTxError, isError: isSendTxError } = useSendTransaction();
 
@@ -77,6 +65,7 @@ export default function Home() {
     } catch (error) {
       console.error("Error sending transaction:", error);
       notification.error("Error sending transaction");
+      setIsFetching(false);
     } finally {
       setIsFetching(false);
     }
