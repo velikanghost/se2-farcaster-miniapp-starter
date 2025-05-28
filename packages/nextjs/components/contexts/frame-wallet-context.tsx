@@ -17,19 +17,11 @@ const queryClient = new QueryClient();
 function WalletConnectionManager({ children }: { children: React.ReactNode }) {
   const { connect, connectors } = useConnect();
   const { switchChain } = useSwitchChain();
-  const { isConnected, chainId } = useAccount();
 
   useEffect(() => {
-    if (!isConnected && connectors[0]) {
-      connect({ connector: connectors[0] });
-    }
-  }, [connect, connectors, isConnected]);
-
-  useEffect(() => {
-    if (isConnected && chainId !== monadTestnet.id) {
-      switchChain({ chainId: monadTestnet.id });
-    }
-  }, [switchChain, chainId, isConnected]);
+    connect({ connector: connectors[0] });
+    switchChain({ chainId: monadTestnet.id });
+  }, []);
 
   return children;
 }

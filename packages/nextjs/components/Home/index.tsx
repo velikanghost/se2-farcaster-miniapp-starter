@@ -28,6 +28,7 @@ export default function Home() {
   const { addMiniApp, context } = useMiniApp();
   const { address: connectedAddress } = useAccount();
   const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
 
   const [username, setUsername] = useState<string>("");
   const [sendNotificationResult, setSendNotificationResult] = useState("");
@@ -129,6 +130,8 @@ export default function Home() {
       notification.error("Please enter a value");
       return;
     }
+
+    switchChain({ chainId: monadTestnet.id });
 
     try {
       await writeContractAsync(
