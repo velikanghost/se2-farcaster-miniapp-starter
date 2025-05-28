@@ -18,7 +18,6 @@ interface ProvidersProps {
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   useInitializeNativeCurrencyPrice();
-  useFrameWallet();
 
   return (
     <>

@@ -17,6 +17,7 @@ import {
 } from "wagmi";
 import { monadTestnet } from "wagmi/chains";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useFrameWallet } from "~~/hooks/useFrameWallet";
 import { useSignIn } from "~~/hooks/useSignIn";
 import { fetchUserByUsername } from "~~/utils/neynar";
 import { sendFrameNotification } from "~~/utils/notifs";
@@ -24,6 +25,7 @@ import { notification } from "~~/utils/scaffold-eth";
 import { truncateAddress } from "~~/utils/truncateAddress";
 
 export default function Home() {
+  useFrameWallet();
   const { signIn, isLoading, isSignedIn, user } = useSignIn({
     autoSignIn: true,
   });
