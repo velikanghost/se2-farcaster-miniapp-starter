@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { Header } from "../UI/Header";
 import { useMiniApp } from "../contexts/miniapp-context";
 import { sdk } from "@farcaster/frame-sdk";
 import { parseEther } from "viem";
@@ -17,7 +15,6 @@ import {
 } from "wagmi";
 import { monadTestnet } from "wagmi/chains";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
-import { useFrameWallet } from "~~/hooks/useFrameWallet";
 import { useSignIn } from "~~/hooks/useSignIn";
 import { fetchUserByUsername } from "~~/utils/neynar";
 import { sendFrameNotification } from "~~/utils/notifs";
@@ -28,12 +25,11 @@ export default function Home() {
   const { signIn, isLoading, isSignedIn, user } = useSignIn({
     autoSignIn: true,
   });
-  const { addMiniApp, notificationDetails } = useMiniApp();
+  const { addMiniApp, notificationDetails, context } = useMiniApp();
   const [username, setUsername] = useState<string>("");
   const [sendNotificationResult, setSendNotificationResult] = useState("");
   const [copied, setCopied] = useState(false);
   const [value, setValue] = useState<string>("");
-  const router = useRouter();
   const { address } = useAccount();
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
@@ -118,6 +114,7 @@ export default function Home() {
       }
     } catch (error) {
       setSendNotificationResult(`Error: ${error}`);
+      console.log("Error sending notification:", error);
     }
   }, [user]);
 
@@ -149,7 +146,6 @@ export default function Home() {
         {
           onSuccess: tx => {
             notification.success("Greeting updated");
-            console.log("tx", tx);
             setTxResults([tx]);
           },
         },
@@ -279,7 +275,7 @@ export default function Home() {
 
             {/* Notifications Section */}
             <div className="mt-4 space-y-2">
-              {!notificationDetails && (
+              {!context?.client?.added && !notificationDetails && (
                 <button
                   onClick={addMiniApp}
                   className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:shadow-lg"
