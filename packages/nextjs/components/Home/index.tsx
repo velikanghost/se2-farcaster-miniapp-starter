@@ -19,7 +19,7 @@ import { useSignIn } from "~~/hooks/use-sign-in";
 import { fetchUserByUsername } from "~~/utils/neynar";
 import { sendFrameNotification } from "~~/utils/notifs";
 import { notification } from "~~/utils/scaffold-eth";
-import { truncateAddress } from "~~/utils/truncate";
+import { truncateAddress } from "~~/utils/truncateAddress";
 
 export default function Home() {
   const { signIn, isLoading, isSignedIn, user } = useSignIn({
@@ -33,13 +33,13 @@ export default function Home() {
 
   const { address } = useAccount();
   const chainId = useChainId();
-  const { switchChain } = useSwitchChain();
+  // const { switchChain } = useSwitchChain();
 
-  const { connect, connectors } = useConnect();
+  // const { connect, connectors } = useConnect();
 
-  useEffect(() => {
-    connect({ connector: connectors[0] });
-  }, [user]);
+  // useEffect(() => {
+  //   connect({ connector: connectors[0] });
+  // }, [user]);
 
   const { address: connectedAddress } = useAccount();
   const [isFetching, setIsFetching] = useState(false);
@@ -67,7 +67,6 @@ export default function Home() {
       setIsFetching(true);
       setTxResults([]);
 
-      switchChain({ chainId: monadTestnet.id });
       const tx = await sendTransactionAsync({
         to: connectedAddress,
         value: parseEther("0.0001"),
@@ -81,7 +80,7 @@ export default function Home() {
     } finally {
       setIsFetching(false);
     }
-  }, [connectedAddress, sendTransactionAsync, switchChain]);
+  }, [connectedAddress, sendTransactionAsync]);
 
   const sendNotification = useCallback(async () => {
     if (!user) {
@@ -134,7 +133,6 @@ export default function Home() {
     }
 
     try {
-      switchChain({ chainId: monadTestnet.id });
       await writeContractAsync(
         {
           functionName: "setGreeting",

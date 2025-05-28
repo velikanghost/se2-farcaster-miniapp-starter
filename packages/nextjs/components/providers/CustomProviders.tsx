@@ -6,7 +6,8 @@ import { MiniAppProvider } from "../contexts/miniapp-context";
 import { QueryClient } from "@tanstack/react-query";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { Toaster } from "react-hot-toast";
-import { useConnect } from "wagmi";
+import { useConnect, useSwitchChain } from "wagmi";
+import { monadTestnet } from "wagmi/chains";
 import { ThemeProvider } from "~~/components/providers/ThemeProvider";
 import { useInitializeNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
 
@@ -16,6 +17,21 @@ interface ProvidersProps {
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   useInitializeNativeCurrencyPrice();
+
+  const { connect, connectors } = useConnect();
+  const { switchChain } = useSwitchChain();
+
+  useEffect(() => {
+    // Connect to the first available connector (Frame connector)
+    if (connectors[0]) {
+      connect({ connector: connectors[0] });
+    }
+  }, [connect, connectors]);
+
+  useEffect(() => {
+    // Switch to Monad testnet
+    switchChain({ chainId: monadTestnet.id });
+  }, [switchChain]);
 
   return (
     <>
