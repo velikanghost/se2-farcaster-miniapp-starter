@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Header } from "../UI/Header";
 import { useMiniApp } from "../contexts/miniapp-context";
 import { sdk } from "@farcaster/frame-sdk";
 import { parseEther } from "viem";
@@ -15,7 +17,7 @@ import {
 } from "wagmi";
 import { monadTestnet } from "wagmi/chains";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
-import { useSignIn } from "~~/hooks/use-sign-in";
+import { useSignIn } from "~~/hooks/useSignIn";
 import { fetchUserByUsername } from "~~/utils/neynar";
 import { sendFrameNotification } from "~~/utils/notifs";
 import { notification } from "~~/utils/scaffold-eth";
@@ -30,7 +32,7 @@ export default function Home() {
   const [sendNotificationResult, setSendNotificationResult] = useState("");
   const [copied, setCopied] = useState(false);
   const [value, setValue] = useState<string>("");
-
+  const router = useRouter();
   const { address } = useAccount();
   const chainId = useChainId();
   // const { switchChain } = useSwitchChain();
