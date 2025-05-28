@@ -275,7 +275,7 @@ export default function Home() {
 
             {/* Notifications Section */}
             <div className="mt-4 space-y-2">
-              {!context?.client?.added && !notificationDetails && (
+              {!context?.client?.added && (
                 <button
                   onClick={addMiniApp}
                   className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:shadow-lg"
@@ -296,7 +296,7 @@ export default function Home() {
 
               <button
                 onClick={sendNotification}
-                disabled={!notificationDetails}
+                disabled={!context?.client?.added || !notificationDetails}
                 className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-purple-600 rounded-xl hover:bg-purple-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Send Test Notification
