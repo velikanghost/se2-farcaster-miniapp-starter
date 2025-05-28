@@ -296,7 +296,7 @@ export default function Home() {
 
               <button
                 onClick={sendNotification}
-                disabled={!context?.client?.added || !notificationDetails}
+                disabled={!context?.client?.added}
                 className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-purple-600 rounded-xl hover:bg-purple-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Send Test Notification
