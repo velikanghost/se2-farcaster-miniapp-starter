@@ -22,18 +22,16 @@ import { notification } from "~~/utils/scaffold-eth";
 import { truncateAddress } from "~~/utils/truncateAddress";
 
 export default function Home() {
-  const { signIn, isLoading, isSignedIn, user } = useSignIn({
-    autoSignIn: true,
-  });
+  const { signIn, isLoading, isSignedIn, user } = useSignIn({});
   const { addMiniApp, context } = useMiniApp();
   const { address: connectedAddress } = useAccount();
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
   const { connect, connectors } = useConnect();
 
-  useEffect(() => {
-    connect({ connector: connectors[0] });
-  }, []);
+  // useEffect(() => {
+  //   connect({ connector: connectors[0] });
+  // }, [user]);
 
   const [username, setUsername] = useState<string>("");
   const [sendNotificationResult, setSendNotificationResult] = useState("");
@@ -65,7 +63,7 @@ export default function Home() {
       setIsFetching(true);
       setTxResults([]);
 
-      switchChain({ chainId: monadTestnet.id });
+      //switchChain({ chainId: monadTestnet.id });
 
       const tx = await sendTransactionAsync({
         to: connectedAddress,

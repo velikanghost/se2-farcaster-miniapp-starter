@@ -27,9 +27,7 @@ function WalletConnectionManager({ children }: { children: React.ReactNode }) {
 export default function FrameWalletProvider({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <WalletConnectionManager>{children}</WalletConnectionManager>
-      </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </WagmiProvider>
   );
 }
