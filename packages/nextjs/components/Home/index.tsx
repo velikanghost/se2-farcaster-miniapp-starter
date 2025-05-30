@@ -163,7 +163,6 @@ export default function Home() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-purple-50 to-white">
       <div className="w-full max-w-2xl p-6 space-y-4">
-        {/* Header Section */}
         <div className="space-y-3 text-center">
           <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
             Scaffold-ETH 2 + Farcaster Mini-App
@@ -178,7 +177,6 @@ export default function Home() {
           )}
         </div>
 
-        {/* Sign In Button - Primary Action */}
         {!isSignedIn ? (
           <div className="flex justify-center">
             <button
@@ -227,7 +225,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* Primary Actions - Indigo */}
             <button
               onClick={handleSend}
               disabled={isFetching}
@@ -236,7 +233,6 @@ export default function Home() {
               {isFetching ? "Sending..." : "Send MON"}
             </button>
 
-            {/* Secondary Actions - Purple */}
             <button
               onClick={() => sdk.actions.openUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}
               className="w-full px-6 py-3 mt-4 font-semibold text-white transition-all duration-200 bg-purple-600 rounded-xl hover:bg-purple-700 hover:shadow-lg"
@@ -244,7 +240,6 @@ export default function Home() {
               Open External URL
             </button>
 
-            {/* Tertiary Actions - Outlined */}
             <button
               onClick={async () => {
                 if (user?.fid) {

@@ -55,33 +55,6 @@ export async function getFarcasterManifest() {
 }
 
 export async function GET() {
-  let frameName = "Scaffold-ETH Mini-app Starter";
-  let noindex = false;
-  const appUrl = process.env.NEXT_PUBLIC_URL || "";
-
-  if (appUrl.includes("localhost")) {
-    frameName += " Local";
-    noindex = true;
-  } else if (appUrl.includes("ngrok")) {
-    frameName += " NGROK";
-    noindex = true;
-  } else if (appUrl.includes("https://dev.")) {
-    frameName += " Dev";
-    noindex = true;
-  }
-
-  return NextResponse.json({
-    accountAssociation: {
-      header: process.env.NEXT_PUBLIC_FARCASTER_HEADER,
-      payload: process.env.NEXT_PUBLIC_FARCASTER_PAYLOAD,
-      signature: process.env.NEXT_PUBLIC_FARCASTER_SIGNATURE,
-    },
-    frame: {
-      version: "1",
-      name: frameName,
-      noindex,
-      homeUrl: appUrl,
-      webhookUrl: `${appUrl}/api/webhook`,
-    },
-  });
+  const manifest = await getFarcasterManifest();
+  return NextResponse.json(manifest);
 }

@@ -1,4 +1,4 @@
-# 🏗 Scaffold-ETH 2 + Farcaster Mini-App Template
+# 🏗 Scaffold-ETH 2 + Farcaster Mini-App Starter
 
 <h4 align="center">
   <a href="https://docs.scaffoldeth.io">Scaffold-ETH 2</a> |
@@ -45,6 +45,7 @@ Built-in notification system powered by Redis/Upstash:
 - Ready-to-use notification endpoint in `utils/notifs.ts`
 - Notification utilities in `utils/kv.ts`
 - KV store implementation for storing user notification preferences
+- Recommended reads [Sending Notifications](https://miniapps.farcaster.xyz/docs/guides/notifications), [Demo](https://github.com/farcasterxyz/frames-v2-demo)
 
 ### MiniApp Provider
 
@@ -78,7 +79,7 @@ To get started with this Scaffold-ETH 2 Farcaster Mini-App template, follow thes
 1. Install dependencies:
 
 ```bash
-cd se2-foundry-monad
+cd se2-farcaster-miniapp-starter
 yarn install && forge install --root packages/foundry
 ```
 
