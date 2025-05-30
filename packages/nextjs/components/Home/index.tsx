@@ -26,12 +26,12 @@ export default function Home() {
   const { addMiniApp, context } = useMiniApp();
   const { address: connectedAddress } = useAccount();
   const chainId = useChainId();
-  const { switchChain } = useSwitchChain();
-  const { connect, connectors } = useConnect();
+  // const { switchChain } = useSwitchChain();
+  // const { connect, connectors } = useConnect();
 
-  // useEffect(() => {
-  //   connect({ connector: connectors[0] });
-  // }, [user]);
+  // // useEffect(() => {
+  // //   connect({ connector: connectors[0] });
+  // // }, [user]);
 
   const [username, setUsername] = useState<string>("");
   const [sendNotificationResult, setSendNotificationResult] = useState("");
@@ -136,7 +136,7 @@ export default function Home() {
       return;
     }
 
-    switchChain({ chainId: monadTestnet.id });
+    //switchChain({ chainId: monadTestnet.id });
 
     try {
       await writeContractAsync(
@@ -159,7 +159,7 @@ export default function Home() {
   }, [value, writeContractAsync]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-purple-50 to-white">
+    <div className="flex items-center justify-center h-[calc(100vh-100px)] bg-gradient-to-b from-purple-50 to-white">
       <div className="w-full max-w-2xl p-6 space-y-4">
         <div className="space-y-3 text-center">
           <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
