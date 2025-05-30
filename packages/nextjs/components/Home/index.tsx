@@ -22,7 +22,7 @@ import { notification } from "~~/utils/scaffold-eth";
 import { truncateAddress } from "~~/utils/truncateAddress";
 
 export default function Home() {
-  const { signIn, isLoading, isSignedIn, user } = useSignIn({});
+  const { signIn, isLoading, isSignedIn, user } = useSignIn({ autoSignIn: true });
   const { addMiniApp, context } = useMiniApp();
   const { address: connectedAddress } = useAccount();
   const chainId = useChainId();
