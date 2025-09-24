@@ -8,9 +8,15 @@ export async function POST(request: NextRequest) {
 
   let data;
   try {
-    // Simplified webhook parsing without Neynar verification
-    // Note: In production, you should implement your own verification
-    data = await parseWebhookEvent(requestJson);
+    //mock verifyAppKey
+    //TODO
+    const verifyAppKey = () => {
+      return {
+        isValid: true,
+        error: null,
+      };
+    };
+    data = await parseWebhookEvent(requestJson, verifyAppKey as any);
   } catch (e: unknown) {
     const error = e as ParseWebhookEvent.ErrorType;
     console.error("Webhook parsing error:", error);
