@@ -12,7 +12,7 @@ import { useConnect, useSwitchChain } from "wagmi";
 import { monadTestnet } from "wagmi/chains";
 import { ThemeProvider } from "~~/components/providers/ThemeProvider";
 import { useInitializeNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
-import { useSignIn } from "~~/hooks/useSignIn";
+import { useQuickAuth } from "~~/hooks/useQuickAuth";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -20,7 +20,7 @@ interface ProvidersProps {
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   useInitializeNativeCurrencyPrice();
-  const { user } = useSignIn({
+  const { user } = useQuickAuth({
     autoSignIn: true,
   });
   const { switchChain } = useSwitchChain();
