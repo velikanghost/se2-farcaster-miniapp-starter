@@ -84,7 +84,14 @@ export async function POST(request: NextRequest) {
 
   let data;
   try {
-    // Parse and verify the webhook event using our custom JFS verification
+    //mock verifyAppKey
+    //TODO
+    const verifyAppKey = () => {
+      return {
+        isValid: true,
+        error: null,
+      };
+    };
     data = await parseWebhookEvent(requestJson, verifyAppKey as any);
   } catch (e: unknown) {
     const error = e as ParseWebhookEvent.ErrorType;

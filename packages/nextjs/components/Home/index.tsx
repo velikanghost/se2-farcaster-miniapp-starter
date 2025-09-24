@@ -8,7 +8,6 @@ import { parseEther } from "viem";
 import { useAccount, useChainId, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useQuickAuth } from "~~/hooks/useQuickAuth";
-// Username search removed - was using Neynar
 import { sendFrameNotification } from "~~/utils/notifs";
 import { notification } from "~~/utils/scaffold-eth";
 import { truncateAddress } from "~~/utils/truncateAddress";
@@ -19,12 +18,9 @@ export default function Home() {
   const { address: connectedAddress } = useAccount();
   const chainId = useChainId();
 
-  // Username search removed - was using Neynar
-  const [sendNotificationResult, setSendNotificationResult] = useState("");
   const [copied, setCopied] = useState(false);
   const [value, setValue] = useState<string>("");
   const [isFetching, setIsFetching] = useState(false);
-  const [isWaiting, setIsWaiting] = useState(false);
   const [txResults, setTxResults] = useState<string[]>([]);
 
   const { sendTransactionAsync, data, error: sendTxError, isError: isSendTxError } = useSendTransaction();
@@ -66,13 +62,11 @@ export default function Home() {
   }, [connectedAddress, sendTransactionAsync]);
 
   const sendNotification = useCallback(async () => {
+    //this will only work after verifying app key
     if (!user) {
       console.log("No user available");
       return;
     }
-
-    setIsWaiting(true);
-    setSendNotificationResult("");
 
     try {
       const response = await sendFrameNotification({
@@ -81,38 +75,30 @@ export default function Home() {
         body: "This is a test notification",
       });
 
-      setIsWaiting(false);
-
       switch (response.state) {
         case "error":
-          setSendNotificationResult(`Error: ${response.error}`);
+          console.log(`Error: ${response.error}`);
           break;
         case "rate_limit":
-          setSendNotificationResult("Rate limited - please try again later");
+          console.log("Rate limited - please try again later");
           break;
         case "no_token":
-          setSendNotificationResult("Notification token is invalid - please re-enable notifications");
+          console.log("Notification token is invalid - please re-enable notifications");
           break;
         case "success":
-          setSendNotificationResult("Success");
+          console.log("Success");
           break;
       }
     } catch (error) {
-      setSendNotificationResult(`Error: ${error}`);
       console.log("Error sending notification:", error);
-      setIsWaiting(false);
     }
   }, [user]);
-
-  // Username search functionality removed - was using Neynar
 
   const updateGreeting = useCallback(async () => {
     if (!value) {
       notification.error("Please enter a value");
       return;
     }
-
-    //switchChain({ chainId: monadTestnet.id });
 
     try {
       await writeContractAsync(
@@ -229,36 +215,16 @@ export default function Home() {
               {copied ? "✓ Copied!" : "Copy App Share URL"}
             </button>
 
-            {/* Profile View Section - Removed username search (was using Neynar) */}
-
-            {/* Notifications Section */}
+            {/* Add Mini App Section */}
             <div className="mt-4 space-y-2">
               {!context?.client?.added && (
                 <button
                   onClick={addMiniApp}
                   className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:shadow-lg"
                 >
-                  Enable Notifications
+                  Add Mini App
                 </button>
               )}
-
-              {sendNotificationResult && (
-                <div
-                  className={`p-4 rounded-xl ${
-                    sendNotificationResult === "Success" ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"
-                  }`}
-                >
-                  {sendNotificationResult}
-                </div>
-              )}
-
-              <button
-                onClick={sendNotification}
-                disabled={!context?.client?.added || isWaiting}
-                className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-purple-600 rounded-xl hover:bg-purple-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isWaiting ? "Sending..." : "Send Test Notification"}
-              </button>
             </div>
 
             {/* Transaction Status Section */}
