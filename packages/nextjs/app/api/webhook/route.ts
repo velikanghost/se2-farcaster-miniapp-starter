@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { ParseWebhookEvent, parseWebhookEvent, verifyAppKeyWithNeynar } from "@farcaster/frame-node";
+import { ParseWebhookEvent, parseWebhookEvent } from "@farcaster/frame-node";
 import { deleteUserNotificationDetails, setUserNotificationDetails } from "~~/utils/kv";
 import { sendFrameNotification } from "~~/utils/notifs";
 
@@ -8,22 +8,13 @@ export async function POST(request: NextRequest) {
 
   let data;
   try {
-    data = await parseWebhookEvent(requestJson, verifyAppKeyWithNeynar);
+    // Simplified webhook parsing without Neynar verification
+    // Note: In production, you should implement your own verification
+    data = await parseWebhookEvent(requestJson);
   } catch (e: unknown) {
     const error = e as ParseWebhookEvent.ErrorType;
-
-    switch (error.name) {
-      case "VerifyJsonFarcasterSignature.InvalidDataError":
-      case "VerifyJsonFarcasterSignature.InvalidEventDataError":
-        // The request data is invalid
-        return Response.json({ success: false, error: error.message }, { status: 400 });
-      case "VerifyJsonFarcasterSignature.InvalidAppKeyError":
-        // The app key is invalid
-        return Response.json({ success: false, error: error.message }, { status: 401 });
-      case "VerifyJsonFarcasterSignature.VerifyAppKeyError":
-        // Internal error verifying the app key (caller may want to try again)
-        return Response.json({ success: false, error: error.message }, { status: 500 });
-    }
+    console.error("Webhook parsing error:", error);
+    return Response.json({ success: false, error: "Invalid webhook data" }, { status: 400 });
   }
 
   const fid = data.fid;

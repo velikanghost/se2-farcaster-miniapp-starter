@@ -7,19 +7,19 @@ import { sdk } from "@farcaster/frame-sdk";
 import { parseEther } from "viem";
 import { useAccount, useChainId, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
-import { useSignIn } from "~~/hooks/useSignIn";
-import { fetchUserByUsername } from "~~/utils/neynar";
+import { useQuickAuth } from "~~/hooks/useQuickAuth";
+// Username search removed - was using Neynar
 import { sendFrameNotification } from "~~/utils/notifs";
 import { notification } from "~~/utils/scaffold-eth";
 import { truncateAddress } from "~~/utils/truncateAddress";
 
 export default function Home() {
-  const { signIn, isLoading, isSignedIn, user } = useSignIn({ autoSignIn: true });
+  const { signIn, isLoading, isSignedIn, user } = useQuickAuth({ autoSignIn: true });
   const { addMiniApp, context } = useMiniApp();
   const { address: connectedAddress } = useAccount();
   const chainId = useChainId();
 
-  const [username, setUsername] = useState<string>("");
+  // Username search removed - was using Neynar
   const [sendNotificationResult, setSendNotificationResult] = useState("");
   const [copied, setCopied] = useState(false);
   const [value, setValue] = useState<string>("");
@@ -104,15 +104,7 @@ export default function Home() {
     }
   }, [user]);
 
-  const handleViewProfile = async () => {
-    if (!username) return;
-    try {
-      const user = await fetchUserByUsername(username);
-      await sdk.actions.viewProfile({ fid: Number(user.fid) });
-    } catch (error) {
-      notification.error("Failed to view profile");
-    }
-  };
+  // Username search functionality removed - was using Neynar
 
   const updateGreeting = useCallback(async () => {
     if (!value) {
@@ -197,11 +189,11 @@ export default function Home() {
             {user && (
               <div className="flex flex-col items-center p-4 space-y-3 bg-white shadow-md rounded-2xl">
                 <div className="relative w-20 h-20">
-                  <Image src={user.pfp_url} alt="Profile" className="w-20 h-20 rounded-full" width={80} height={80} />
+                  <Image src={user.pfpUrl} alt="Profile" className="w-20 h-20 rounded-full" width={80} height={80} />
                   <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-400 border-4 border-white rounded-full"></div>
                 </div>
                 <div className="text-center">
-                  <h2 className="text-xl font-bold text-gray-800">{user.display_name}</h2>
+                  <h2 className="text-xl font-bold text-gray-800">{user.displayName}</h2>
                   <p className="text-gray-500">@{user.username}</p>
                 </div>
               </div>
@@ -237,22 +229,7 @@ export default function Home() {
               {copied ? "✓ Copied!" : "Copy App Share URL"}
             </button>
 
-            {/* Profile View Section */}
-            <div className="flex flex-col gap-3 mt-4">
-              <input
-                type="text"
-                value={username}
-                placeholder="Enter username"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                onChange={e => setUsername(e.target.value)}
-              />
-              <button
-                onClick={handleViewProfile}
-                className="w-full px-6 py-3 text-white transition-all duration-200 bg-violet-600 rounded-xl hover:bg-violet-700 hover:shadow-lg"
-              >
-                View Profile
-              </button>
-            </div>
+            {/* Profile View Section - Removed username search (was using Neynar) */}
 
             {/* Notifications Section */}
             <div className="mt-4 space-y-2">
