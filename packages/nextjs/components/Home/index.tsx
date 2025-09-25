@@ -22,7 +22,7 @@ export default function Home() {
   const [value, setValue] = useState<string>("");
   const [isFetching, setIsFetching] = useState(false);
   const [txResults, setTxResults] = useState<string[]>([]);
-
+  const [sendNotificationResult, setSendNotificationResult] = useState<string>("");
   const { sendTransactionAsync, data, error: sendTxError, isError: isSendTxError } = useSendTransaction();
 
   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({
@@ -77,19 +77,20 @@ export default function Home() {
 
       switch (response.state) {
         case "error":
-          console.log(`Error: ${response.error}`);
+          setSendNotificationResult(`Error: ${response.error}`);
           break;
         case "rate_limit":
-          console.log("Rate limited - please try again later");
+          setSendNotificationResult("Rate limited - please try again later");
           break;
         case "no_token":
-          console.log("Notification token is invalid - please re-enable notifications");
+          setSendNotificationResult("Notification token is invalid - please re-enable notifications");
           break;
         case "success":
-          console.log("Success");
+          setSendNotificationResult("Success");
           break;
       }
     } catch (error) {
+      setSendNotificationResult(`Error sending notification: ${error}`);
       console.log("Error sending notification:", error);
     }
   }, [user]);
@@ -253,6 +254,19 @@ export default function Home() {
                 <p className="text-red-600">Error: {sendTxError?.message}</p>
               </div>
             )}
+
+            {sendNotificationResult && (
+              <div className="p-4 border border-red-200 bg-red-50 rounded-xl">
+                <p className="text-red-600">{sendNotificationResult}</p>
+              </div>
+            )}
+
+            <button
+              onClick={sendNotification}
+              className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:shadow-lg"
+            >
+              Send Notification
+            </button>
 
             {/* Greeting Section */}
             <div className="space-y-3">
