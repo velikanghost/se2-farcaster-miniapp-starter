@@ -8,7 +8,7 @@ import { MiniAppProvider } from "../contexts/miniapp-context";
 import { QueryClient } from "@tanstack/react-query";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { Toaster } from "react-hot-toast";
-import { useConnect, useSwitchChain } from "wagmi";
+import { useAccount, useConnect, useSwitchChain } from "wagmi";
 import { monadTestnet } from "wagmi/chains";
 import { ThemeProvider } from "~~/components/providers/ThemeProvider";
 import { useInitializeNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
@@ -23,13 +23,23 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   const { user } = useQuickAuth({
     autoSignIn: true,
   });
+  const { address, isConnected } = useAccount();
   const { switchChain } = useSwitchChain();
   const { connect, connectors } = useConnect();
 
   useEffect(() => {
-    connect({ connector: connectors[0] });
-    switchChain({ chainId: monadTestnet.id });
-  }, [user]);
+    // Only auto-connect if we have connectors, user is signed in, and not already connected
+    if (connectors.length > 0 && user && !isConnected) {
+      connect({ connector: connectors[0] });
+    }
+  }, [user, connectors, connect, isConnected]);
+
+  useEffect(() => {
+    // Switch to correct chain when connected
+    if (isConnected) {
+      switchChain({ chainId: monadTestnet.id });
+    }
+  }, [isConnected, switchChain]);
 
   return (
     <>

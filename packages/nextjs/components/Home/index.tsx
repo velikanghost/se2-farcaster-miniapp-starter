@@ -62,7 +62,6 @@ export default function Home() {
   }, [connectedAddress, sendTransactionAsync]);
 
   const sendNotification = useCallback(async () => {
-    //this will only work after verifying app key
     if (!user) {
       console.log("No user available");
       return;

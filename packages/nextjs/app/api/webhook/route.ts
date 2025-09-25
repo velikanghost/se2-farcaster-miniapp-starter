@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server";
-// import { ParseWebhookEvent, parseWebhookEvent } from "@farcaster/frame-node"; // No longer needed - doing direct JFS verification
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { hexToBytes } from "viem";
 import { decodeHeader, decodePayload, decodeSignature } from "~~/utils/jfs-utils";
