@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useMiniApp } from "../contexts/miniapp-context";
 import { sdk } from "@farcaster/frame-sdk";
@@ -23,6 +23,7 @@ export default function Home() {
   const [txResults, setTxResults] = useState<string[]>([]);
   const [sendNotificationResult, setSendNotificationResult] = useState<string>("");
   const [isSendingNotification, setIsSendingNotification] = useState(false);
+  const [isMiniAppAdded, setIsMiniAppAdded] = useState(false);
   const { sendTransactionAsync, data, error: sendTxError, isError: isSendTxError } = useSendTransaction();
 
   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({
@@ -37,6 +38,13 @@ export default function Home() {
   const { writeContractAsync } = useScaffoldWriteContract({
     contractName: "YourContract",
   });
+
+  // Sync local state with context state
+  useEffect(() => {
+    if (context?.client?.added) {
+      setIsMiniAppAdded(true);
+    }
+  }, [context?.client?.added]);
 
   const handleSend = useCallback(async () => {
     if (!connectedAddress) return;
@@ -60,6 +68,17 @@ export default function Home() {
       setIsFetching(false);
     }
   }, [connectedAddress, sendTransactionAsync]);
+
+  const handleAddMiniApp = useCallback(async () => {
+    try {
+      const result = await addMiniApp();
+      if (result) {
+        setIsMiniAppAdded(true);
+      }
+    } catch (error) {
+      console.error("Error adding mini app:", error);
+    }
+  }, [addMiniApp]);
 
   const sendNotification = useCallback(async () => {
     if (!user) {
@@ -221,9 +240,9 @@ export default function Home() {
 
             {/* Add Mini App Section */}
             <div className="mt-4 space-y-2">
-              {!context?.client?.added && (
+              {!context?.client?.added && !isMiniAppAdded && (
                 <button
-                  onClick={addMiniApp}
+                  onClick={handleAddMiniApp}
                   className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:shadow-lg"
                 >
                   Add Mini App
@@ -272,7 +291,7 @@ export default function Home() {
 
             <button
               onClick={sendNotification}
-              disabled={!context?.client?.added || isSendingNotification}
+              disabled={(!context?.client?.added && !isMiniAppAdded) || isSendingNotification}
               className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSendingNotification ? "Sending..." : "Send Notification"}
