@@ -5,8 +5,7 @@ import Image from "next/image";
 import { useMiniApp } from "../contexts/miniapp-context";
 import { sdk } from "@farcaster/frame-sdk";
 import { parseEther } from "viem";
-import { useAccount, useChainId, useSendTransaction, useSwitchChain, useWaitForTransactionReceipt } from "wagmi";
-import { monadTestnet } from "wagmi/chains";
+import { useAccount, useChainId, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useQuickAuth } from "~~/hooks/useQuickAuth";
 // import { sendFrameNotification } from "~~/utils/notifs"; // No longer needed - using API endpoint
@@ -18,7 +17,6 @@ export default function Home() {
   const { addMiniApp, context } = useMiniApp();
   const { address: connectedAddress } = useAccount();
   const chainId = useChainId();
-  const { switchChain } = useSwitchChain();
 
   const [copied, setCopied] = useState(false);
   const [value, setValue] = useState<string>("");
@@ -47,9 +45,6 @@ export default function Home() {
       setIsFetching(true);
       setTxResults([]);
 
-      // Ensure we're on the correct chain before sending transaction
-      await switchChain({ chainId: monadTestnet.id });
-
       const tx = await sendTransactionAsync({
         to: connectedAddress,
         value: parseEther("0.0001"),
@@ -64,7 +59,7 @@ export default function Home() {
     } finally {
       setIsFetching(false);
     }
-  }, [connectedAddress, sendTransactionAsync, switchChain]);
+  }, [connectedAddress, sendTransactionAsync]);
 
   const sendNotification = useCallback(async () => {
     if (!user) {
@@ -105,9 +100,6 @@ export default function Home() {
     }
 
     try {
-      // Ensure we're on the correct chain before writing to contract
-      await switchChain({ chainId: monadTestnet.id });
-
       await writeContractAsync(
         {
           functionName: "setGreeting",
@@ -125,7 +117,7 @@ export default function Home() {
       console.error("Error updating greeting:", error);
       notification.error("Error updating greeting");
     }
-  }, [value, writeContractAsync, switchChain]);
+  }, [value, writeContractAsync]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-purple-50 to-white">
