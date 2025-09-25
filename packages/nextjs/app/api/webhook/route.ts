@@ -1,81 +1,48 @@
 import { NextRequest } from "next/server";
 import { ParseWebhookEvent, parseWebhookEvent } from "@farcaster/frame-node";
-import { verifyMessage } from "viem";
+import { ed25519 } from "@noble/curves/ed25519.js";
 import { isHex } from "viem";
 import { deleteUserNotificationDetails, setUserNotificationDetails } from "~~/utils/kv";
 import { sendFrameNotification } from "~~/utils/notifs";
 
+// import { decodeHeader, decodePayload, decodeSignature, fromBase64Url } from "~~/utils/jfs-utils"; // Will use these for full JFS verification
+
 /**
  * Custom verification function for JSON Farcaster Signatures (JFS)
  * Based on the JFS specification: https://github.com/farcasterxyz/protocol/discussions/208
+ *
+ * This function is called by parseWebhookEvent with the parsed signature.
+ * The signature parameter is the hex signature extracted from the JFS.
  */
-async function verifyAppKey(fid: number, signature: string): Promise<void> {
+async function verifyAppKey(fid: number, signature: string): Promise<any> {
   try {
-    // Parse the JFS from the signature
-    const jfsParts = signature.split(".");
-    if (jfsParts.length !== 3) {
-      throw new Error("Invalid JFS format");
+    console.log("Verifying signature for FID:", fid, "Signature:", signature);
+
+    // The signature parameter from parseWebhookEvent is just the hex signature
+    // We need to get the full JFS from the request to verify it properly
+    // For now, we'll implement a basic verification that checks if the signature is valid hex
+    if (!isHex(signature)) {
+      return { isValid: false, error: "Invalid signature format - not a valid hex string" };
     }
 
-    const [encodedHeader, encodedPayload, encodedSignature] = jfsParts;
+    // TODO: We need access to the full JFS (header, payload, signature) to properly verify
+    // The parseWebhookEvent function is extracting just the signature component
+    // We need to either:
+    // 1. Parse the JFS manually before calling parseWebhookEvent, or
+    // 2. Modify this function to work with the parsed data
 
-    // Decode the header
-    const header = JSON.parse(Buffer.from(encodedHeader, "base64url").toString("utf-8"));
-
-    // Validate header structure
-    if (!header.fid || !header.type || !header.key) {
-      throw new Error("Invalid JFS header");
+    // For now, we'll do a basic validation
+    if (signature.length !== 66) {
+      // 0x + 64 hex chars
+      return { isValid: false, error: "Invalid signature length" };
     }
 
-    // Verify that the FID in the signature matches the expected FID
-    if (header.fid !== fid) {
-      throw new Error(`FID mismatch: expected ${fid}, got ${header.fid}`);
-    }
-
-    // Only support app_key type for now (most common for webhooks)
-    if (header.type !== "app_key") {
-      throw new Error(`Unsupported signature type: ${header.type}`);
-    }
-
-    // Construct the signing input as per JFS specification
-    const signingInput = `${encodedHeader}.${encodedPayload}`;
-
-    // Verify the signature
-    // For app_key type, this should be an EdDSA signature
-    // We'll use viem's verifyMessage which handles ECDSA signatures
-    // Note: This is a simplified implementation - in production you might need
-    // to handle EdDSA signatures differently depending on the key type
-    const isValid = await verifyMessage({
-      address: header.key as `0x${string}`,
-      message: signingInput,
-      signature: encodedSignature as `0x${string}`,
-    });
-
-    if (!isValid) {
-      // Try legacy encoding fallback as mentioned in the JFS spec
-      try {
-        const utf8EncodedHexSignature = Buffer.from(encodedSignature).toString("utf-8");
-        if (isHex(utf8EncodedHexSignature)) {
-          const fallbackResult = await verifyMessage({
-            address: header.key as `0x${string}`,
-            message: signingInput,
-            signature: utf8EncodedHexSignature as `0x${string}`,
-          });
-          if (fallbackResult) {
-            return; // Success
-          }
-        }
-      } catch (fallbackError) {
-        // Fallback failed, original signature is invalid
-      }
-    }
-
-    if (!isValid) {
-      throw new Error("Invalid signature");
-    }
+    // TODO: Implement proper JFS verification once we have access to header and payload
+    console.log("Basic signature validation passed for FID:", fid);
+    return { isValid: true, error: null };
   } catch (error) {
     console.error("JFS verification error:", error);
-    throw error;
+    return { isValid: false, error: error instanceof Error ? error.message : "Unknown verification error" };
   }
 }
 
@@ -84,15 +51,8 @@ export async function POST(request: NextRequest) {
 
   let data;
   try {
-    //mock verifyAppKey
-    //TODO
-    const verifyAppKey = () => {
-      return {
-        isValid: true,
-        error: null,
-      };
-    };
-    data = await parseWebhookEvent(requestJson, verifyAppKey as any);
+    console.log("Raw webhook request:", JSON.stringify(requestJson, null, 2));
+    data = await parseWebhookEvent(requestJson, verifyAppKey);
   } catch (e: unknown) {
     const error = e as ParseWebhookEvent.ErrorType;
     console.error("Webhook parsing error:", error);
