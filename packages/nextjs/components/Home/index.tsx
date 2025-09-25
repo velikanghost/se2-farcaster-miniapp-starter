@@ -8,7 +8,7 @@ import { parseEther } from "viem";
 import { useAccount, useChainId, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useQuickAuth } from "~~/hooks/useQuickAuth";
-import { sendFrameNotification } from "~~/utils/notifs";
+// import { sendFrameNotification } from "~~/utils/notifs"; // No longer needed - using API endpoint
 import { notification } from "~~/utils/scaffold-eth";
 import { truncateAddress } from "~~/utils/truncateAddress";
 
@@ -69,25 +69,24 @@ export default function Home() {
     }
 
     try {
-      const response = await sendFrameNotification({
-        fid: Number(user.fid),
-        title: "Test Notification",
-        body: "This is a test notification",
+      const response = await fetch("/api/send-notification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fid: Number(user.fid),
+          title: "Test Notification",
+          body: "This is a test notification",
+        }),
       });
 
-      switch (response.state) {
-        case "error":
-          setSendNotificationResult(`Error: ${response.error}`);
-          break;
-        case "rate_limit":
-          setSendNotificationResult("Rate limited - please try again later");
-          break;
-        case "no_token":
-          setSendNotificationResult("Notification token is invalid - please re-enable notifications");
-          break;
-        case "success":
-          setSendNotificationResult("Success");
-          break;
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setSendNotificationResult("Success");
+      } else {
+        setSendNotificationResult(`Error: ${result.error || "Unknown error"}`);
       }
     } catch (error) {
       setSendNotificationResult(`Error sending notification: ${error}`);
