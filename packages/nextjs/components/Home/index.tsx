@@ -22,6 +22,7 @@ export default function Home() {
   const [isFetching, setIsFetching] = useState(false);
   const [txResults, setTxResults] = useState<string[]>([]);
   const [sendNotificationResult, setSendNotificationResult] = useState<string>("");
+  const [isSendingNotification, setIsSendingNotification] = useState(false);
   const { sendTransactionAsync, data, error: sendTxError, isError: isSendTxError } = useSendTransaction();
 
   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({
@@ -67,6 +68,9 @@ export default function Home() {
     }
 
     try {
+      setIsSendingNotification(true);
+      setSendNotificationResult("");
+
       const response = await fetch("/api/send-notification", {
         method: "POST",
         headers: {
@@ -89,6 +93,8 @@ export default function Home() {
     } catch (error) {
       setSendNotificationResult(`Error sending notification: ${error}`);
       console.log("Error sending notification:", error);
+    } finally {
+      setIsSendingNotification(false);
     }
   }, [user]);
 
@@ -253,16 +259,23 @@ export default function Home() {
             )}
 
             {sendNotificationResult && (
-              <div className="p-4 border border-red-200 bg-red-50 rounded-xl">
-                <p className="text-red-600">{sendNotificationResult}</p>
+              <div
+                className={`p-4 border rounded-xl ${
+                  sendNotificationResult === "Success" ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"
+                }`}
+              >
+                <p className={sendNotificationResult === "Success" ? "text-green-600" : "text-red-600"}>
+                  {sendNotificationResult}
+                </p>
               </div>
             )}
 
             <button
               onClick={sendNotification}
-              className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:shadow-lg"
+              disabled={!context?.client?.added || isSendingNotification}
+              className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Send Notification
+              {isSendingNotification ? "Sending..." : "Send Notification"}
             </button>
 
             {/* Greeting Section */}
