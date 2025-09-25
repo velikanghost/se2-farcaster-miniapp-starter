@@ -7,7 +7,7 @@
 
 🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on Monad and other blockchain integrated with Farcaster Mini-Apps. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts while leveraging Farcaster's social features.
 
-⚙️ Built using NextJS, Foundry, Farcaster Frame SDK, Wagmi, Viem, Typescript, and Neynar.
+⚙️ Built using NextJS, Foundry, Farcaster Frame SDK, Wagmi, Viem, Typescript, and custom JFS verification.
 
 ## Features
 
@@ -25,6 +25,7 @@
 - 🔔 **Background Notifications**: Redis-backed notification system using Upstash
 - 🛠️ **MiniApp Provider**: Built-in context provider for Farcaster Mini-App functionality
 - 🎨 **Dynamic Preview Images**: Support for custom preview images in your frames
+- 🔒 **Custom JFS Verification**: Built-in JSON Farcaster Signature verification
 
 ![Debug Contracts tab](packages/nextjs/public/thumb.png)
 
@@ -63,6 +64,15 @@ Support for dynamic OG images in your Frames:
 - Example implementation in `app/api/og/route.tsx`
 - Customizable templates for Frame previews
 - Real-time image generation based on Frame content
+
+### Custom JFS Verification
+
+Built-in JSON Farcaster Signature verification without external dependencies:
+
+- **Full JFS Support**: Handles app_key, auth, and custody signature types
+- **Base64url Utilities**: Custom encoding/decoding for browser compatibility
+- **Webhook Security**: Secure webhook verification in `app/api/webhook/route.ts`
+- **Type Safety**: Full TypeScript support with proper error handling
 
 ## Requirements
 
@@ -111,7 +121,7 @@ This command deploys a test smart contract to the local network. The contract is
 The environment variables enable the following features:
 
 - Frame metadata - Sets up the Frame Embed that will be shown when you cast your frame
-- Account assocation - Allows users to add your frame to their account, enables notifications
+- Account association - Allows users to add your frame to their account, enables notifications
 - Redis API keys - Enable Webhooks and background notifications for your application by storing users notification details
 
 ```bash
@@ -214,7 +224,7 @@ You should be able to see a URL to your app on Vercel.
 - [Farcaster Mini Apps](https://miniapps.farcaster.xyz/docs/getting-started)
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-- [Neynar](https://neynar.com)
+- [JSON Farcaster Signatures](https://github.com/farcasterxyz/protocol/discussions/208)
 
 ## Contributing to Scaffold-ETH 2
 
