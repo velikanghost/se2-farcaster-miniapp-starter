@@ -8,7 +8,7 @@ import { parseEther } from "viem";
 import { useAccount, useChainId, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useQuickAuth } from "~~/hooks/useQuickAuth";
-import { sendFrameNotification } from "~~/utils/notifs";
+// import { sendFrameNotification } from "~~/utils/notifs"; // No longer needed - using API endpoint
 import { notification } from "~~/utils/scaffold-eth";
 import { truncateAddress } from "~~/utils/truncateAddress";
 
@@ -22,7 +22,7 @@ export default function Home() {
   const [value, setValue] = useState<string>("");
   const [isFetching, setIsFetching] = useState(false);
   const [txResults, setTxResults] = useState<string[]>([]);
-
+  const [sendNotificationResult, setSendNotificationResult] = useState<string>("");
   const { sendTransactionAsync, data, error: sendTxError, isError: isSendTxError } = useSendTransaction();
 
   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({
@@ -69,27 +69,27 @@ export default function Home() {
     }
 
     try {
-      const response = await sendFrameNotification({
-        fid: Number(user.fid),
-        title: "Test Notification",
-        body: "This is a test notification",
+      const response = await fetch("/api/send-notification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fid: Number(user.fid),
+          title: "Test Notification",
+          body: "This is a test notification",
+        }),
       });
 
-      switch (response.state) {
-        case "error":
-          console.log(`Error: ${response.error}`);
-          break;
-        case "rate_limit":
-          console.log("Rate limited - please try again later");
-          break;
-        case "no_token":
-          console.log("Notification token is invalid - please re-enable notifications");
-          break;
-        case "success":
-          console.log("Success");
-          break;
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setSendNotificationResult("Success");
+      } else {
+        setSendNotificationResult(`Error: ${result.error || "Unknown error"}`);
       }
     } catch (error) {
+      setSendNotificationResult(`Error sending notification: ${error}`);
       console.log("Error sending notification:", error);
     }
   }, [user]);
@@ -253,6 +253,19 @@ export default function Home() {
                 <p className="text-red-600">Error: {sendTxError?.message}</p>
               </div>
             )}
+
+            {sendNotificationResult && (
+              <div className="p-4 border border-red-200 bg-red-50 rounded-xl">
+                <p className="text-red-600">{sendNotificationResult}</p>
+              </div>
+            )}
+
+            <button
+              onClick={sendNotification}
+              className="w-full px-6 py-3 font-semibold text-white transition-all duration-200 bg-indigo-600 rounded-xl hover:bg-indigo-700 hover:shadow-lg"
+            >
+              Send Notification
+            </button>
 
             {/* Greeting Section */}
             <div className="space-y-3">
