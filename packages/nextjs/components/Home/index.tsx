@@ -8,7 +8,6 @@ import { parseEther } from "viem";
 import { useAccount, useChainId, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useQuickAuth } from "~~/hooks/useQuickAuth";
-// import { sendFrameNotification } from "~~/utils/notifs"; // No longer needed - using API endpoint
 import { notification } from "~~/utils/scaffold-eth";
 import { truncateAddress } from "~~/utils/truncateAddress";
 

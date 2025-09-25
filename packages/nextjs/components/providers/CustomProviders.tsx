@@ -35,13 +35,6 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user, connectors, connect, isConnected]);
 
-  // useEffect(() => {
-  //   // Switch to Monad testnet when connected
-  //   if (isConnected) {
-  //     switchChain({ chainId: monadTestnet.id });
-  //   }
-  // }, [isConnected, switchChain]);
-
   return (
     <>
       <div className={`min-h-screen`}>
