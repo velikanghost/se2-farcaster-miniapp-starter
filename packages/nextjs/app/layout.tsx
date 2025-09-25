@@ -1,4 +1,3 @@
-import "@rainbow-me/rainbowkit/styles.css";
 import { Providers } from "~~/components/providers/CustomProviders";
 import "~~/styles/globals.css";
 import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";

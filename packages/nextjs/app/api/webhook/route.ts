@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server";
-// import { ParseWebhookEvent, parseWebhookEvent } from "@farcaster/frame-node"; // No longer needed - doing direct JFS verification
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { hexToBytes } from "viem";
 import { decodeHeader, decodePayload, decodeSignature } from "~~/utils/jfs-utils";
@@ -11,8 +10,6 @@ import { sendFrameNotification } from "~~/utils/notifs";
  */
 async function verifyJFS(requestJson: any): Promise<{ isValid: boolean; error: string | null; data?: any }> {
   try {
-    console.log("Raw webhook request:", JSON.stringify(requestJson, null, 2));
-
     // Check if we have the JFS components
     if (!requestJson.header || !requestJson.payload || !requestJson.signature) {
       return { isValid: false, error: "Missing JFS components" };
@@ -20,7 +17,6 @@ async function verifyJFS(requestJson: any): Promise<{ isValid: boolean; error: s
 
     // Decode the header
     const header = decodeHeader(requestJson.header);
-    console.log("Decoded header:", header);
 
     // Validate header structure
     if (!header.fid || !header.type || !header.key) {
@@ -34,14 +30,12 @@ async function verifyJFS(requestJson: any): Promise<{ isValid: boolean; error: s
 
     // Decode the payload
     const payload = decodePayload(requestJson.payload);
-    console.log("Decoded payload:", payload);
 
     // Construct the signing input as per JFS specification
     const signingInput = `${requestJson.header}.${requestJson.payload}`;
 
     // Decode the signature
     const signatureBytes = decodeSignature(requestJson.signature);
-    console.log("Signature bytes length:", signatureBytes.length);
 
     // Verify the EdDSA signature for app_key type
     const verifyResult = ed25519.verify(
@@ -54,7 +48,6 @@ async function verifyJFS(requestJson: any): Promise<{ isValid: boolean; error: s
       return { isValid: false, error: "Invalid EdDSA signature" };
     }
 
-    console.log("JFS verification successful for FID:", header.fid);
     return {
       isValid: true,
       error: null,
@@ -64,7 +57,6 @@ async function verifyJFS(requestJson: any): Promise<{ isValid: boolean; error: s
       },
     };
   } catch (error) {
-    console.error("JFS verification error:", error);
     return {
       isValid: false,
       error: error instanceof Error ? error.message : "Unknown verification error",
@@ -78,7 +70,6 @@ export async function POST(request: NextRequest) {
   // Verify the JFS first
   const verification = await verifyJFS(requestJson);
   if (!verification.isValid) {
-    console.error("JFS verification failed:", verification.error);
     return Response.json({ success: false, error: "Invalid webhook signature" }, { status: 400 });
   }
 
